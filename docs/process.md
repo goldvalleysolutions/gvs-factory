@@ -77,6 +77,13 @@ Each lens gets exactly one line, `VERDICT: PASS` or `VERDICT: CHANGES`, followed
 3. **Tests and evals.** Every criterion has a test or a reproducible check, tests fail without the change, tests run in the local verification, no network or paid calls in tests.
 4. **UX.** The flow works with no dead ends, loading, empty and error states are useful, copy is short and plain, keyboard and small-screen use work. A change with nothing user-facing gets PASS with a note.
 
+Lens isolation (wave 1, T5):
+
+- The Reviewer runs each of the four lenses as its own fresh, stateless run.
+- A lens sees only the PR diff, the acceptance checklist from the spec and its own lens instructions.
+- A lens never sees another lens's output.
+- The Reviewer combines the verdict only after all four lenses have returned.
+
 Review rules:
 
 - Run it, do not just read it. Reproduce at least one criterion yourself.
