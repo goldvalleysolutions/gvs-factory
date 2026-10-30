@@ -27,6 +27,12 @@ The factory knows no project names. Each project sets these in its `AGENTS.md` o
 | `VERIFY_E2E_CMD` | End-to-end command, for example `npx playwright test`. Runs while the stack is up, or on its own when there is no compose file |
 | `SEMGREP_CONFIG` | Semgrep rules. Default `p/ci` |
 | `VERIFY_DIRS` | Directories to check. Default: `.` and first-level subdirectories with a project file |
+| `VERIFY_DOCKER_TARGET` | Build target for the root `Dockerfile` of each checked directory |
+| `VERIFY_DOCKERFILES` | Extra Dockerfiles to build and scan, for example `Dockerfile.worker` |
+| `VERIFY_DOCKER_BUILD_ARGS` | Extra `docker build` flags, for example `--network host` |
+| `VERIFY_SKIP` | Checks to skip (first word of the row, e.g. `mypy`); the row shows `SKIP` with `VERIFY_SKIP_REASON` (default "not part of this repo's gate"). Name each skip in the pull request |
+
+`VERIFY_COMPOSE_TEST` and `VERIFY_E2E_CMD` get `COMPOSE_PROJECT_NAME` and `COMPOSE_FILE` in their environment, so plain `docker compose ...` calls inside them hit the script's stack. A repo can commit these settings in `.verify-local.env` (`KEY=VALUE` lines; only `VERIFY_*` and `SEMGREP_CONFIG` are read, the file is never sourced, and the environment wins).
 
 `scripts/verify-local.sh` runs these and prints the block below. Paste it into the pull request description.
 
