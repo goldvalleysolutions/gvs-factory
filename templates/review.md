@@ -2,16 +2,16 @@
 
 _Run by a reviewer that did not write the code. Save as `review-round-<N>.md` with the job and link it from the pull request._
 
-**Reviewed:** head `<sha>` against spec `<path>` and the build report in the pull request description.
+**Reviewed:** head `<sha>` against the acceptance checklist in spec `<path>`. The build report is a list of claims; the evidence run below checks them.
 **Reviewer:** <name or agent> · **Date and time:** <...>
 
 ## Ground rules
-1. **Run it; do not just read it.** Check out the branch, run the check commands from `AGENTS.md` (or `scripts/verify-local.sh`), run the tests, and start the app for anything a user or another system can see. Reproduce at least one AC from the build report yourself per task. If you could not run something, say so and why. Then read the diff in full.
+1. **Run it once, before the lenses.** Outside the lens runs, the Reviewer checks out the branch, runs the check commands from `AGENTS.md` (or `scripts/verify-local.sh`), runs the tests, and starts the app for anything a user or another system can see. Record pass/fail evidence for each item on the spec's acceptance checklist, reproducing at least one yourself. If you could not run something, say so and why. Then run each lens fresh and stateless with only the diff, the checklist with this evidence, and its own lens section below. A lens never sees another lens's output; combine the verdicts only after all four return.
 2. **Each lens gets its own verdict line**, exactly `VERDICT: PASS` or `VERDICT: CHANGES`.
 3. **CHANGES only for real problems:** a bug, a spec gap, a failing check, a security issue, or a clear convention break. A failing check is always CHANGES.
 4. **Do not block on taste.** Style preferences, naming and "nice to have" ideas go under Notes, never Findings.
 5. **Do not block on pre-existing issues** the PR did not make worse; mention them under Notes.
-6. From round 2, re-check every finding from the previous round and say fixed or not fixed.
+6. From round 2, the evidence run re-checks every finding from the previous round and records fixed or not fixed on the checklist; each lens judges it from there.
 7. Findings give `path:line`, the problem, its impact and the fix you want. Write "None." when there are none.
 
 ## Commands run
