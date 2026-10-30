@@ -7,7 +7,7 @@ This document defines how a change moves from an idea to the `main` branch. It i
 1. **One file per step.** Every step writes one markdown file. Its first line is a machine-readable verdict, so the state of a job can be read at a glance and checked automatically.
 2. **Testable acceptance criteria.** Every criterion is one observable behaviour plus a "Verify" line that says exactly how to check it, using only the repo.
 3. **Evidence or it did not happen.** Only reviewer evidence and the Local verification block count. The builder's own report is a list of claims to check, not proof.
-4. **Independent review.** The review is done by a run that did not write the code, with only the spec, the diff and the repo.
+4. **Independent review.** The review is done by runs that did not write the code. The Reviewer runs the branch once and records evidence; each lens then judges only the diff, the acceptance checklist with that evidence, and its own instructions.
 5. **Capped rework.** At most three review rounds, then a human decides.
 6. **A human owns `main`.** Agents may merge to `test`. Only the human merges to `main`.
 
@@ -18,7 +18,7 @@ This document defines how a change moves from an idea to the `main` branch. It i
 | Human approver | Person | Sets direction, approves briefs and specs, creates repos, holds secrets and permissions, tests `test` hands-on, decides every flagged item, and is the only one who merges to `main`. |
 | PM agent | AI agent | Triages and ranks requests, writes the brief and the spec with acceptance criteria, spot-checks evidence, and writes the ready-to-merge note. |
 | Developer agent | AI agent | Builds the change (directly or by launching a coding agent), opens the pull request with a build report, and handles rework. |
-| Reviewer | AI agent run, independent of the builder | Runs the four-lens review and writes one verdict per lens. |
+| Reviewer | AI agent run, independent of the builder | Runs the branch once for evidence, runs the four lenses in isolation, and combines one verdict per lens. |
 | CI | Automation | Builds and publishes images, deploys and releases. It does not run tests on pull requests; validation is local (`standards/ci-minutes.md`). |
 
 ## 3. How a job flows
@@ -79,17 +79,18 @@ Each lens gets exactly one line, `VERDICT: PASS` or `VERDICT: CHANGES`, followed
 
 Lens isolation (wave 1, T5):
 
-- The Reviewer runs each of the four lenses as its own fresh, stateless run.
-- A lens sees only the PR diff, the acceptance checklist from the spec and its own lens instructions.
+- First, outside the lens runs, the Reviewer runs the branch and the app once and records pass/fail evidence for each item on the spec's acceptance checklist.
+- The Reviewer then runs each of the four lenses as its own fresh, stateless run.
+- A lens sees only the PR diff, the acceptance checklist with that evidence attached, and its own lens instructions.
 - A lens never sees another lens's output.
 - The Reviewer combines the verdict only after all four lenses have returned.
 
 Review rules:
 
-- Run it, do not just read it. Reproduce at least one criterion yourself.
+- Run it, do not just read it. The Reviewer's evidence run reproduces at least one criterion; lenses judge that evidence and the diff, they do not run the code.
 - CHANGES only for real problems: a bug, a spec gap, a failing check, a security issue, or a clear convention break. A failing check is always CHANGES.
 - Style preferences and pre-existing issues go under Notes, never Findings.
-- From round 2, re-check every earlier finding and say fixed or not fixed.
+- From round 2, the evidence run re-checks every earlier finding and records fixed or not fixed with the checklist, so each lens can judge it.
 
 ## 6. Rework rules
 
