@@ -6,7 +6,7 @@ This document defines how a change moves from an idea to the `main` branch. It i
 
 1. **One file per step.** Every step writes one markdown file. Its first line is a machine-readable verdict, so the state of a job can be read at a glance and checked automatically.
 2. **Testable acceptance criteria.** Every criterion is one observable behaviour plus a "Verify" line that says exactly how to check it, using only the repo.
-3. **Evidence or it did not happen.** Only reviewer or CI evidence counts. The builder's own report is a list of claims to check, not proof.
+3. **Evidence or it did not happen.** Only reviewer evidence and the Local verification block count. The builder's own report is a list of claims to check, not proof.
 4. **Independent review.** The review is done by a run that did not write the code, with only the spec, the diff and the repo.
 5. **Capped rework.** At most three review rounds, then a human decides.
 6. **A human owns `main`.** Agents may merge to `test`. Only the human merges to `main`.
@@ -19,7 +19,7 @@ This document defines how a change moves from an idea to the `main` branch. It i
 | PM agent | AI agent | Triages and ranks requests, writes the brief and the spec with acceptance criteria, spot-checks evidence, and writes the ready-to-merge note. |
 | Developer agent | AI agent | Builds the change (directly or by launching a coding agent), opens the pull request with a build report, and handles rework. |
 | Reviewer | AI agent run, independent of the builder | Runs the four-lens review and writes one verdict per lens. |
-| CI | Automation | Runs lint and tests on the exact head commit of every pull request. |
+| CI | Automation | Builds and publishes images, deploys and releases. It does not run tests on pull requests; validation is local (`standards/ci-minutes.md`). |
 
 ## 3. How a job flows
 
@@ -32,11 +32,11 @@ flowchart TD
   D -- yes --> E[Spec: acceptance criteria with Verify lines]
   E --> F[Developer agent builds on a branch]
   F --> G[Pull request into test, with build report]
-  G --> H[CI on the exact head commit]
+  G --> H[Local verification block on the exact head commit]
   H --> I[Four-lens review: security, code, tests and evals, UX]
   I -- any CHANGES, rounds left --> F
   I -- CHANGES after round 3 --> N[Needs human]
-  I -- all PASS and CI green --> J[Agent merges to test]
+  I -- all PASS and verification on head --> J[Agent merges to test]
   J --> K[Ready-to-merge note]
   K --> L[Human tests test hands-on]
   L -- punch list --> F
@@ -48,10 +48,10 @@ flowchart TD
 3. **Brief.** One page: the problem, who it is for, what done looks like. Nothing is ready to build until the human approves the brief.
 4. **Spec.** The PM agent writes the spec from `templates/spec.md`. Every acceptance criterion has a Verify line. The spec must pass the Definition of Ready (in the template) before build starts.
 5. **Build.** The developer agent builds on a branch, makes the simplest change that fully meets the spec, runs the repo's checks, and opens a pull request into `test`. The pull request description starts with a build report from `templates/build-report.md`.
-6. **CI.** CI runs on the exact head commit. No stacked pull requests: each one targets `test` and gets fresh CI.
+6. **Local verification.** The developer agent runs `scripts/verify-local.sh` (lint, types, unit, functional and end-to-end tests, security scans) on the exact head commit and adds the Local verification block to the pull request. No stacked pull requests: each one targets `test` and gets a fresh block.
 7. **Review.** An independent reviewer runs the four-lens review from `templates/review.md` and writes one verdict per lens.
 8. **Rework.** Any CHANGES verdict sends the pull request back to the builder with the review file. See section 5.
-9. **Merge to `test`.** When all four lenses PASS and CI is green on the same head commit, an agent merges the pull request into `test`. No human is needed for this step, unless an always-flagged item applies (section 7).
+9. **Merge to `test`.** When all four lenses PASS and the Local verification block is all PASS on the same head commit, an agent merges the pull request into `test`. No human is needed for this step, unless an always-flagged item applies (section 7).
 10. **Ready-to-merge note.** The PM agent writes a short note from `templates/ready-to-merge.md`: what it is, how to try it, the checks, and anything to look at.
 11. **Human check.** The human pulls `test`, tries it, and either sends a punch list back to step 5 or approves.
 12. **Merge to `main`.** Only the human merges `test` into `main`. Releases and publishing each need the human's OK.
@@ -63,9 +63,9 @@ flowchart TD
 | Brief approval | The human approves the brief | Human |
 | Definition of Ready | Every criterion has a Verify line, scope and assumptions are written, expected flags are ticked | PM agent |
 | Build report | First line is `STATUS: READY`, with evidence per criterion | Developer agent |
-| CI | Green on the exact head commit | CI |
+| Local verification | Block in the pull request, no FAIL, on the exact head commit | Developer agent |
 | Four-lens review | All four lenses `VERDICT: PASS` | Reviewer |
-| Merge to `test` | Review PASS and CI green on the same commit, no unresolved flags | Developer agent |
+| Merge to `test` | Review PASS and Local verification on the same commit, no unresolved flags | Developer agent |
 | Merge to `main` | The human has tested `test` and approves | Human |
 
 ## 5. The four review lenses
@@ -74,7 +74,7 @@ Each lens gets exactly one line, `VERDICT: PASS` or `VERDICT: CHANGES`, followed
 
 1. **Security.** Auth on new endpoints, input validation, injection and XSS, secrets in commits, data exposure in logs and pages, outbound calls, new dependencies, exposed ports.
 2. **Code.** Does what the spec asks and nothing more, handles errors and edge cases, reuses existing patterns, follows the repo's conventions, updates docs.
-3. **Tests and evals.** Every criterion has a test or a reproducible check, tests fail without the change, tests run in CI, no network or paid calls in tests.
+3. **Tests and evals.** Every criterion has a test or a reproducible check, tests fail without the change, tests run in the local verification, no network or paid calls in tests.
 4. **UX.** The flow works with no dead ends, loading, empty and error states are useful, copy is short and plain, keyboard and small-screen use work. A change with nothing user-facing gets PASS with a note.
 
 Review rules:

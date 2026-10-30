@@ -2,8 +2,8 @@
 
 A change is done when every item below is true. The PM agent checks items 1 to 7 before writing the ready-to-merge note. The human checks item 8.
 
-1. **Criteria met with evidence.** Every acceptance criterion in the spec passes, with reviewer or CI evidence. The builder's own report does not count as evidence.
-2. **CI green on the exact head.** All CI jobs pass on the commit being merged. No stacked pull requests.
+1. **Criteria met with evidence.** Every acceptance criterion in the spec passes, with reviewer or Local verification evidence. The builder's own report does not count as evidence.
+2. **Local verification on the exact head.** The pull request has a Local verification block with no FAIL, run on the commit being merged (see `standards/ci-minutes.md`). No stacked pull requests.
 3. **Four lenses pass.** Security, code, tests and evals, and UX each have `VERDICT: PASS` on that same commit, within 3 review rounds.
 4. **Scope held.** No files changed outside the spec's areas. Out-of-scope items are untouched.
 5. **No secrets or real personal data.** No keys, tokens or `.env` files committed. Examples use fictional data.

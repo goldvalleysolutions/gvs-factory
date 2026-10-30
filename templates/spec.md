@@ -36,9 +36,9 @@ _Each one is one observable behaviour plus how to check it, runnable by someone 
 - Import from CSV, other formats, scheduled exports.
 
 ## 4. Whole-PR acceptance criteria (always include)
-- **AC-G.1** CI is green on the pull request's last commit (every job).
-  **Verify:** CI checks on the head commit → all `success`.
-- **AC-G.2** Lint and format pass locally with the exact CI commands from `AGENTS.md`.
+- **AC-G.1** The Local verification block has no FAIL on the pull request's last commit.
+  **Verify:** block in the pull request, SHA equals the head commit, no `FAIL`.
+- **AC-G.2** Lint and format pass locally with the exact commands from `AGENTS.md`.
   **Verify:** the commands → exit 0.
 - **AC-G.3** No secrets, keys or real personal data are committed; `.env` is not committed.
   **Verify:** `git diff <base>...HEAD --name-only | grep -x .env` → no output; a secret scan of the diff → no findings.
