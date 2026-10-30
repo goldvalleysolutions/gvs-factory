@@ -44,7 +44,7 @@ bash /path/to/gvs-factory/scripts/verify-local.sh            # auto-detects stac
 VERIFY_DIRS="frontend backend" bash scripts/verify-local.sh  # pick the directories yourself
 bash scripts/verify-local.sh --allow-missing                 # do not fail when a tool (gitleaks, semgrep, docker, trivy) is missing
 VERIFY_COMPOSE_TEST="curl -fsS localhost:8080/health" bash scripts/verify-local.sh  # compose up --wait, test, compose down -v
-VERIFY_E2E_CMD="npx playwright test" bash scripts/verify-local.sh                   # end-to-end tests (against the stack if there is one)
+VERIFY_E2E_CMD="npx playwright test" bash scripts/verify-local.sh                   # e2e tests (default when tests/e2e/ exists; against the stack if there is one)
 ```
 
 It detects npm and Python projects, Dockerfiles (`docker build` + `trivy image`) and compose files, always runs gitleaks and Semgrep (`p/ci`, or `SEMGREP_CONFIG`), and prints a Markdown block to paste into the pull request. It exits non-zero if any check fails or the tree is dirty.

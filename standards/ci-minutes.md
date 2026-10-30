@@ -10,7 +10,8 @@ Before a pull request is merged to `test`, the developer agent runs every check 
 
 - Lint and type checks
 - Unit tests
-- Functional and end-to-end tests
+- Functional tests
+- The Playwright e2e suite under `tests/e2e/` (desktop and mobile projects, stub LLM by default; screenshot and trace on every failure). It must PASS before any merge to `test`
 - Security: gitleaks (secrets), Semgrep (free rules, `p/ci`), `npm audit` or `pip-audit` (dependencies), and Trivy (`HIGH,CRITICAL`, `--ignore-unfixed`) on every image built from a Dockerfile
 - Container checks: build each Dockerfile; when the repo has a compose file, bring the stack up and test against it
 
@@ -24,7 +25,7 @@ The factory knows no project names. Each project sets these in its `AGENTS.md` o
 |---|---|
 | `VERIFY_COMPOSE_FILE` | Compose file to use. Default: the first of `compose.yaml`, `compose.yml`, `docker-compose.yaml`, `docker-compose.yml` at the root |
 | `VERIFY_COMPOSE_TEST` | Command run against the stack: `docker compose up -d --build --wait`, the command, then `docker compose down -v` (always) |
-| `VERIFY_E2E_CMD` | End-to-end command, for example `npx playwright test`. Runs while the stack is up, or on its own when there is no compose file |
+| `VERIFY_E2E_CMD` | End-to-end command. Default when `tests/e2e/` exists: `npx playwright test`. Runs while the stack is up, or on its own when there is no compose file. With no `tests/e2e/` and no command, the row is `FAIL`, or `SKIP` with a clear message under `--allow-missing` |
 | `SEMGREP_CONFIG` | Semgrep rules. Default `p/ci` |
 | `VERIFY_DIRS` | Directories to check. Default: `.` and first-level subdirectories with a project file |
 | `VERIFY_DOCKER_TARGET` | Build target for the root `Dockerfile` of each checked directory |
@@ -40,6 +41,7 @@ The factory knows no project names. Each project sets these in its `AGENTS.md` o
 
 - Title `## Local verification`
 - Repo, branch, head SHA (`git rev-parse HEAD`), time, and a dirty-tree line
+- The Playwright e2e result with passes per project (for example `desktop 12/12, mobile 12/12`); add it to the e2e row
 - A table with one row per command: command, result (`PASS`, `FAIL` or `SKIP` with a reason), duration
 - An overall line: `Overall: PASS` or `Overall: FAIL`
 

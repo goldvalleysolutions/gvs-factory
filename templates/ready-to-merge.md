@@ -4,7 +4,7 @@ _The human tests hands-on, so this note is short and visual: 3 to 5 lines plus a
 
 **<What it is, one line.>** <pull request link>
 **Try it:** <one command or link that shows the change> · <screenshot(s) or a 30 to 60 second demo>
-**Checks:** head `<sha7>` merged to `test` · Local verification all PASS (on this exact head) · review round <n>: Security / Code / Tests / UX all PASS (<review link>)
+**Checks:** head `<sha7>` merged to `test` · Local verification all PASS (on this exact head, Playwright e2e: <desktop n/n, mobile n/n>) · review round <n>: Security / Code / Tests / UX all PASS (<review link>)
 **Look at:** <0 to 2 always-flagged items, one line each, or "nothing special">
 
 Example:
