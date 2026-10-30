@@ -1,6 +1,83 @@
 # CI minutes standard
 
-CI minutes are a limited budget. A single hung job can run until the platform's time limit and use up a large share of a month's minutes. Every repo built by the factory follows these rules.
+Version 2 (2026-10-30). Supersedes version 1.
+
+CI minutes are a limited budget. All validation runs locally, before any merge to `test`. CI keeps only the work that must run on the hosted Git service.
+
+## 1. Local verification
+
+Before a pull request is merged to `test`, the developer agent runs every check locally on the exact head commit:
+
+- Lint and type checks
+- Unit tests
+- Functional and end-to-end tests
+- Security: gitleaks (secrets), Semgrep (free rules), `npm audit` or `pip-audit` (dependencies), and Trivy on built images when a container runtime is available
+
+`scripts/verify-local.sh` runs these and prints the block below. Paste it into the pull request description.
+
+### Block format
+
+- Title `## Local verification`
+- Repo, branch, head SHA (`git rev-parse HEAD`), time, and a dirty-tree line
+- A table with one row per command: command, result (`PASS`, `FAIL` or `SKIP` with a reason), duration
+- An overall line: `Overall: PASS` or `Overall: FAIL`
+
+### Example (fictional)
+
+```markdown
+## Local verification
+
+- Repo: example-app
+- Branch: feature/add-login
+- Head SHA: 0123456789abcdef0123456789abcdef01234567
+- Tree: clean
+- Time: 2026-10-30 14:05 America/New_York
+
+| Command | Result | Duration |
+|---|---|---|
+| `npm ci` | PASS | 21s |
+| `npm run lint` | PASS | 6s |
+| `npm run typecheck` | PASS | 9s |
+| `npm test` | PASS | 14s |
+| `npm run test:e2e` | PASS | 48s |
+| `npm audit --audit-level=high` | PASS | 3s |
+| `gitleaks dir` | PASS | 1s |
+| `semgrep --config auto --error` | PASS | 30s |
+| `trivy image` | SKIP (no container runtime) | 0s |
+
+Overall: PASS
+```
+
+## 2. Merge rule
+
+- No Local verification block, a block with any `FAIL`, or a block on a SHA other than the pull request's head means **no merge**.
+- Any new commit needs a new block.
+- `MISSING` tools count as `FAIL` unless the gap is named in the pull request and accepted by the human.
+- Agents merge to `test`. Only the human merges to `main`.
+
+## 3. What CI keeps
+
+- **Build and publish images** to the container registry on `push` to `test` or `main`, with `paths` filters limited to the Dockerfile and source directories.
+- **Website deploy** from `main`.
+- **Release workflow**, still gated by the human.
+
+Pull-request-triggered test, lint and scan jobs are removed.
+
+## 4. Optional `run-ci` label
+
+A repo may keep one manual check workflow that runs only when a pull request has the `run-ci` label, or by `workflow_dispatch`, for a one-off run:
+
+```yaml
+on:
+  pull_request:
+    types: [labeled]
+  workflow_dispatch:
+jobs:
+  check:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.label.name == 'run-ci' }}
+```
+
+## 5. Rules for the workflows that remain
 
 1. **Timeouts.** Set `timeout-minutes` to 10 to 15 on every job.
 2. **Concurrency.** Cancel superseded runs:
@@ -9,15 +86,6 @@ CI minutes are a limited budget. A single hung job can run until the platform's 
      group: ${{ github.workflow }}-${{ github.ref }}
      cancel-in-progress: true
    ```
-3. **Triggers.**
-   - `push` only on `main` and `test`.
-   - `pull_request` with types `[ready_for_review, synchronize, labeled]`, and skip drafts unless the pull request has a `run-ci` label:
-     `if: ${{ !github.event.pull_request.draft || contains(github.event.pull_request.labels.*.name, 'run-ci') }}`
-   - `workflow_dispatch` for manual runs.
-   - No duplicate push and pull request runs for the same commit.
-   - `paths-ignore` for docs-only changes (`docs/**`, `**/*.md`).
-4. **Fail fast.** A quick lint job runs first. Test and end-to-end jobs declare `needs: lint`.
-5. **Cache container builds.** Use `docker/build-push-action` with `cache-from: type=gha` and `cache-to: type=gha,mode=max`.
-6. **Document it.** Record these rules in each repo's `AGENTS.md`.
-
-Drafts and agent review rounds run checks locally. Mark a pull request ready for review once.
+3. **Path filters.** Build only when the Dockerfile or source changes; never on docs-only changes.
+4. **Cache container builds.** Use `docker/build-push-action` with `cache-from: type=gha` and `cache-to: type=gha,mode=max`.
+5. **Document it.** Record these rules in each repo's `AGENTS.md`.

@@ -2,7 +2,7 @@ STATUS: READY
 
 <!-- The FIRST LINE is the verdict and must be exactly `STATUS: READY` or `STATUS: BLOCKED`. Nothing else on that line.
 This report lives at the top of the pull request description. Rewrite it at the end of every round and keep the Log.
-The report is a list of claims. Reviewers and CI provide the evidence that counts. -->
+The report is a list of claims. Reviewers and the Local verification block provide the evidence that counts. -->
 
 # Build report: <spec title>
 
@@ -26,9 +26,9 @@ Files changed:
   ```
 - **Result:** PASS | FAIL | NOT RUN (<reason>)
 
-### AC-G.1 · CI green
-- **Command:** CI checks on <head sha>
-- **Output:** `Lint: success · Test: success (<n> passed)`
+### AC-G.1 · Local verification on head
+- **Command:** `scripts/verify-local.sh` on <head sha>
+- **Output:** the Local verification block (paste it in full below the report)
 - **Result:** PASS | FAIL
 
 ## Validation

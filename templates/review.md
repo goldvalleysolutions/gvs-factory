@@ -6,7 +6,7 @@ _Run by a reviewer that did not write the code. Save as `review-round-<N>.md` wi
 **Reviewer:** <name or agent> · **Date and time:** <...>
 
 ## Ground rules
-1. **Run it; do not just read it.** Check out the branch, run the CI commands from `AGENTS.md`, run the tests, and start the app for anything a user or another system can see. Reproduce at least one AC from the build report yourself per task. If you could not run something, say so and why. Then read the diff in full.
+1. **Run it; do not just read it.** Check out the branch, run the check commands from `AGENTS.md` (or `scripts/verify-local.sh`), run the tests, and start the app for anything a user or another system can see. Reproduce at least one AC from the build report yourself per task. If you could not run something, say so and why. Then read the diff in full.
 2. **Each lens gets its own verdict line**, exactly `VERDICT: PASS` or `VERDICT: CHANGES`.
 3. **CHANGES only for real problems:** a bug, a spec gap, a failing check, a security issue, or a clear convention break. A failing check is always CHANGES.
 4. **Do not block on taste.** Style preferences, naming and "nice to have" ideas go under Notes, never Findings.
@@ -39,7 +39,7 @@ _Look at: does what the spec requires and nothing more; edge cases, missing awai
 ## Lens 3 · Tests and evals
 VERDICT: PASS | CHANGES
 
-_Look at: every AC in the spec has a test or a reproducible check; tests fail without the change (spot-check one by reverting it locally); the new tests run in CI; no network or paid calls in tests; timer logic tested with controlled time, not sleeps; existing suites still pass unchanged._
+_Look at: every AC in the spec has a test or a reproducible check; tests fail without the change (spot-check one by reverting it locally); the new tests run in the local verification; no network or paid calls in tests; timer logic tested with controlled time, not sleeps; existing suites still pass unchanged._
 
 ### Findings
 ### Notes
@@ -53,6 +53,6 @@ _Look at, with the app running: the flow does what the spec promises with no dea
 ### Notes
 
 ## Round result
-- **All four PASS and CI green** → an agent merges to `test`; the PM agent writes the ready-to-merge note.
+- **All four PASS and a Local verification block with no FAIL on the same head** → an agent merges to `test`; the PM agent writes the ready-to-merge note.
 - **Any CHANGES and rounds left** (max 3 rounds: round 1 plus 2 rework rounds) → the developer agent resumes the builder with this file.
 - **Any CHANGES after round 3** → stop; the PM agent writes the ready-to-merge note marked **NOT READY** with the open findings, for the human to decide.
