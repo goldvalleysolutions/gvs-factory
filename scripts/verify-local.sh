@@ -45,6 +45,16 @@ FAILED=0
 have() { command -v "$1" >/dev/null 2>&1; }
 add_row() { ROWS+=("| \`$1\` | $2 | $3 |"); }
 
+# log_name <text>: short, safe log file stem. A slug of the first 60 characters
+# plus an 8-hex hash of the full text, so long labels never exceed NAME_MAX and
+# labels sharing a 60-character prefix still get distinct files.
+log_name() {
+  local slug hash
+  slug=$(printf '%s' "$1" | tr -c 'A-Za-z0-9._-' '_' | cut -c1-60)
+  hash=$(printf '%s' "$1" | cksum | awk '{printf "%08x", $1}')
+  printf '%s-%s' "$slug" "$hash"
+}
+
 # run <dir> <label> <command...>
 run() {
   local dir=$1 label=$2; shift 2
@@ -52,7 +62,7 @@ run() {
   for k in "${SKIPS[@]}"; do
     if [ "$k" = "${label%% *}" ] || [ "$k" = "$label" ]; then skip "$dir" "$label" "$SKIP_REASON"; return 0; fi
   done
-  logf="$LOG_DIR/$(printf '%s' "$dir-$label" | tr -c 'A-Za-z0-9._-' '_').log"
+  logf="$LOG_DIR/$(log_name "$dir-$label").log"
   start=$(date +%s)
   ( cd "$dir" && "$@" ) >"$logf" 2>&1
   rc=$?
