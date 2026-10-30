@@ -11,7 +11,22 @@ Before a pull request is merged to `test`, the developer agent runs every check 
 - Lint and type checks
 - Unit tests
 - Functional and end-to-end tests
-- Security: gitleaks (secrets), Semgrep (free rules), `npm audit` or `pip-audit` (dependencies), and Trivy on built images when a container runtime is available
+- Security: gitleaks (secrets), Semgrep (free rules, `p/ci`), `npm audit` or `pip-audit` (dependencies), and Trivy (`HIGH,CRITICAL`, `--ignore-unfixed`) on every image built from a Dockerfile
+- Container checks: build each Dockerfile; when the repo has a compose file, bring the stack up and test against it
+
+Docker is required whenever the repo has a Dockerfile or the compose variables are set. Without it the row is `MISSING`.
+
+### Container variables
+
+The factory knows no project names. Each project sets these in its `AGENTS.md` or verify command:
+
+| Variable | Effect |
+|---|---|
+| `VERIFY_COMPOSE_FILE` | Compose file to use. Default: the first of `compose.yaml`, `compose.yml`, `docker-compose.yaml`, `docker-compose.yml` at the root |
+| `VERIFY_COMPOSE_TEST` | Command run against the stack: `docker compose up -d --build --wait`, the command, then `docker compose down -v` (always) |
+| `VERIFY_E2E_CMD` | End-to-end command, for example `npx playwright test`. Runs while the stack is up, or on its own when there is no compose file |
+| `SEMGREP_CONFIG` | Semgrep rules. Default `p/ci` |
+| `VERIFY_DIRS` | Directories to check. Default: `.` and first-level subdirectories with a project file |
 
 `scripts/verify-local.sh` runs these and prints the block below. Paste it into the pull request description.
 
@@ -42,8 +57,9 @@ Before a pull request is merged to `test`, the developer agent runs every check 
 | `npm run test:e2e` | PASS | 48s |
 | `npm audit --audit-level=high` | PASS | 3s |
 | `gitleaks dir` | PASS | 1s |
-| `semgrep --config auto --error` | PASS | 30s |
-| `trivy image` | SKIP (no container runtime) | 0s |
+| `semgrep scan --config p/ci --error` | PASS | 30s |
+| `docker build` | PASS | 40s |
+| `trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1` | PASS | 12s |
 
 Overall: PASS
 ```

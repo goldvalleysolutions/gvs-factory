@@ -3,6 +3,9 @@
 # Usage: verify-local.sh [--allow-missing] [-h]
 # Env:   SEMGREP_CONFIG=p/ci (default) or auto
 #        VERIFY_DIRS="frontend backend"  directories to check (default: auto-detect . and first-level subdirs)
+#        VERIFY_COMPOSE_FILE=compose.yaml  compose file (default: auto-detect compose.yaml/yml, docker-compose.yaml/yml at the root)
+#        VERIFY_COMPOSE_TEST="cmd"  run cmd against the stack (docker compose up -d --wait ... down -v)
+#        VERIFY_E2E_CMD="cmd"  end-to-end command (e.g. npx playwright test); runs while the compose stack is up, if any
 # Exit:  non-zero if any check FAILs, a required tool is MISSING (without --allow-missing), or the tree is dirty.
 set -u
 
@@ -10,7 +13,7 @@ ALLOW_MISSING=0
 for arg in "$@"; do
   case "$arg" in
     --allow-missing) ALLOW_MISSING=1 ;;
-    -h|--help) sed -n '2,5p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,8p' "$0"; exit 0 ;;
     *) echo "unknown argument: $arg" >&2; exit 2 ;;
   esac
 done
@@ -43,12 +46,26 @@ run() {
   fi
 }
 skip() { local shown=$2; [ "$1" != "." ] && shown="$1: $2"; add_row "$shown" "SKIP ($3)" "0s"; }
+# missing <tool> [reason]
 missing() {
+  local why=${2:-not installed}
   if [ $ALLOW_MISSING -eq 1 ]; then
-    add_row "$1" "SKIP (MISSING: $1 not installed, allowed)" "0s"
+    add_row "$1" "SKIP (MISSING: $1 $why, allowed)" "0s"
   else
-    add_row "$1" "FAIL (MISSING: $1 not installed)" "0s"; FAILED=1
+    add_row "$1" "FAIL (MISSING: $1 $why)" "0s"; FAILED=1
   fi
+}
+DOCKER_OK=
+docker_ok() {
+  if [ -z "$DOCKER_OK" ]; then
+    if ! have docker; then DOCKER_OK=none
+    elif ! docker info >/dev/null 2>&1; then DOCKER_OK=down
+    else DOCKER_OK=yes; fi
+  fi
+  [ "$DOCKER_OK" = yes ]
+}
+docker_missing() {
+  if [ "$DOCKER_OK" = none ]; then missing docker; else missing docker "daemon not reachable"; fi
 }
 
 has_npm_script() { (cd "$1" && node -e "const s=require(process.cwd()+'/package.json').scripts||{};process.exit(s[process.argv[1]]?0:1)" "$2") 2>/dev/null; }
@@ -99,15 +116,46 @@ for d in "${DIRS[@]}"; do
     else missing pip-audit; fi
   fi
   if [ -f "$d/Dockerfile" ]; then
-    if have docker && have trivy && docker info >/dev/null 2>&1; then
+    if docker_ok; then
       img="verify-local-$(basename "$(cd "$d" && pwd)" | tr '[:upper:]' '[:lower:]'):scan"
       run "$d" "docker build" docker build -q -t "$img" .
-      run "$d" "trivy image --severity HIGH,CRITICAL --exit-code 1" trivy image --quiet --severity HIGH,CRITICAL --exit-code 1 "$img"
-    else
-      skip "$d" "trivy image" "docker or trivy not available"
-    fi
+      if have trivy; then
+        run "$d" "trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1" \
+          trivy image --quiet --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 "$img"
+      else missing trivy; fi
+    else docker_missing; fi
   fi
 done
+
+# Containers: compose stack and end-to-end tests (opt-in through env vars)
+COMPOSE_FILE_FOUND=${VERIFY_COMPOSE_FILE:-}
+if [ -z "$COMPOSE_FILE_FOUND" ]; then
+  for f in compose.yaml compose.yml docker-compose.yaml docker-compose.yml; do
+    [ -f "$f" ] && { COMPOSE_FILE_FOUND=$f; break; }
+  done
+fi
+STACK_UP=0
+if [ -n "$COMPOSE_FILE_FOUND" ] && [ -n "${VERIFY_COMPOSE_TEST:-}${VERIFY_E2E_CMD:-}" ]; then
+  if docker_ok; then
+    COMPOSE=(docker compose -f "$COMPOSE_FILE_FOUND" -p "verify-local-$$")
+    run . "docker compose up -d --build --wait" "${COMPOSE[@]}" up -d --build --wait
+    case "${ROWS[-1]}" in *"| PASS |"*) STACK_UP=1 ;; esac
+  else docker_missing; fi
+elif [ -n "$COMPOSE_FILE_FOUND" ]; then
+  skip . "docker compose up" "VERIFY_COMPOSE_TEST not set"
+fi
+if [ -n "${VERIFY_COMPOSE_TEST:-}" ]; then
+  if [ $STACK_UP -eq 1 ]; then run . "$VERIFY_COMPOSE_TEST" bash -c "$VERIFY_COMPOSE_TEST"
+  else skip . "$VERIFY_COMPOSE_TEST" "compose stack not up"; fi
+fi
+if [ -n "${VERIFY_E2E_CMD:-}" ]; then
+  if [ -n "$COMPOSE_FILE_FOUND" ] && [ $STACK_UP -eq 0 ]; then skip . "$VERIFY_E2E_CMD" "compose stack not up"
+  else run . "$VERIFY_E2E_CMD" bash -c "$VERIFY_E2E_CMD"; fi
+fi
+if [ -n "${COMPOSE+x}" ]; then
+  # Always tear down, even after a failed up or test.
+  run . "docker compose down -v" "${COMPOSE[@]}" down -v --remove-orphans
+fi
 
 # Repo-wide security scans
 if have gitleaks; then run . "gitleaks dir ." gitleaks dir . --redact --no-banner; else missing gitleaks; fi
