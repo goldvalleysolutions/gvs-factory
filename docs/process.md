@@ -1,0 +1,124 @@
+# The software factory process
+
+This document defines how a change moves from an idea to the `main` branch. It is tool-neutral. The examples assume Git, a hosted Git service with pull requests (for example GitHub) and a CI service, but any equivalent works.
+
+## 1. Principles
+
+1. **One file per step.** Every step writes one markdown file. Its first line is a machine-readable verdict, so the state of a job can be read at a glance and checked automatically.
+2. **Testable acceptance criteria.** Every criterion is one observable behaviour plus a "Verify" line that says exactly how to check it, using only the repo.
+3. **Evidence or it did not happen.** Only reviewer or CI evidence counts. The builder's own report is a list of claims to check, not proof.
+4. **Independent review.** The review is done by a run that did not write the code, with only the spec, the diff and the repo.
+5. **Capped rework.** At most three review rounds, then a human decides.
+6. **A human owns `main`.** Agents may merge to `test`. Only the human merges to `main`.
+
+## 2. Roles
+
+| Role | Kind | Responsibilities |
+|---|---|---|
+| Human approver | Person | Sets direction, approves briefs and specs, creates repos, holds secrets and permissions, tests `test` hands-on, decides every flagged item, and is the only one who merges to `main`. |
+| PM agent | AI agent | Triages and ranks requests, writes the brief and the spec with acceptance criteria, spot-checks evidence, and writes the ready-to-merge note. |
+| Developer agent | AI agent | Builds the change (directly or by launching a coding agent), opens the pull request with a build report, and handles rework. |
+| Reviewer | AI agent run, independent of the builder | Runs the four-lens review and writes one verdict per lens. |
+| CI | Automation | Runs lint and tests on the exact head commit of every pull request. |
+
+## 3. How a job flows
+
+```mermaid
+flowchart TD
+  A[Request] --> B[PM agent triages and ranks]
+  B --> C[One-page brief]
+  C --> D{Human approves brief?}
+  D -- no --> P[Parked or reworked]
+  D -- yes --> E[Spec: acceptance criteria with Verify lines]
+  E --> F[Developer agent builds on a branch]
+  F --> G[Pull request into test, with build report]
+  G --> H[CI on the exact head commit]
+  H --> I[Four-lens review: security, code, tests and evals, UX]
+  I -- any CHANGES, rounds left --> F
+  I -- CHANGES after round 3 --> N[Needs human]
+  I -- all PASS and CI green --> J[Agent merges to test]
+  J --> K[Ready-to-merge note]
+  K --> L[Human tests test hands-on]
+  L -- punch list --> F
+  L -- OK --> M[Human merges test to main]
+```
+
+1. **Request.** An idea or request comes in.
+2. **Triage.** The PM agent ranks it against the current goals. Off-goal items are parked, not deleted, with a note on what would bring them back.
+3. **Brief.** One page: the problem, who it is for, what done looks like. Nothing is ready to build until the human approves the brief.
+4. **Spec.** The PM agent writes the spec from `templates/spec.md`. Every acceptance criterion has a Verify line. The spec must pass the Definition of Ready (in the template) before build starts.
+5. **Build.** The developer agent builds on a branch, makes the simplest change that fully meets the spec, runs the repo's checks, and opens a pull request into `test`. The pull request description starts with a build report from `templates/build-report.md`.
+6. **CI.** CI runs on the exact head commit. No stacked pull requests: each one targets `test` and gets fresh CI.
+7. **Review.** An independent reviewer runs the four-lens review from `templates/review.md` and writes one verdict per lens.
+8. **Rework.** Any CHANGES verdict sends the pull request back to the builder with the review file. See section 5.
+9. **Merge to `test`.** When all four lenses PASS and CI is green on the same head commit, an agent merges the pull request into `test`. No human is needed for this step, unless an always-flagged item applies (section 7).
+10. **Ready-to-merge note.** The PM agent writes a short note from `templates/ready-to-merge.md`: what it is, how to try it, the checks, and anything to look at.
+11. **Human check.** The human pulls `test`, tries it, and either sends a punch list back to step 5 or approves.
+12. **Merge to `main`.** Only the human merges `test` into `main`. Releases and publishing each need the human's OK.
+
+## 4. Gates
+
+| Gate | Passes when | Owner |
+|---|---|---|
+| Brief approval | The human approves the brief | Human |
+| Definition of Ready | Every criterion has a Verify line, scope and assumptions are written, expected flags are ticked | PM agent |
+| Build report | First line is `STATUS: READY`, with evidence per criterion | Developer agent |
+| CI | Green on the exact head commit | CI |
+| Four-lens review | All four lenses `VERDICT: PASS` | Reviewer |
+| Merge to `test` | Review PASS and CI green on the same commit, no unresolved flags | Developer agent |
+| Merge to `main` | The human has tested `test` and approves | Human |
+
+## 5. The four review lenses
+
+Each lens gets exactly one line, `VERDICT: PASS` or `VERDICT: CHANGES`, followed by findings (`path:line`, problem, impact, fix) and non-blocking notes.
+
+1. **Security.** Auth on new endpoints, input validation, injection and XSS, secrets in commits, data exposure in logs and pages, outbound calls, new dependencies, exposed ports.
+2. **Code.** Does what the spec asks and nothing more, handles errors and edge cases, reuses existing patterns, follows the repo's conventions, updates docs.
+3. **Tests and evals.** Every criterion has a test or a reproducible check, tests fail without the change, tests run in CI, no network or paid calls in tests.
+4. **UX.** The flow works with no dead ends, loading, empty and error states are useful, copy is short and plain, keyboard and small-screen use work. A change with nothing user-facing gets PASS with a note.
+
+Review rules:
+
+- Run it, do not just read it. Reproduce at least one criterion yourself.
+- CHANGES only for real problems: a bug, a spec gap, a failing check, a security issue, or a clear convention break. A failing check is always CHANGES.
+- Style preferences and pre-existing issues go under Notes, never Findings.
+- From round 2, re-check every earlier finding and say fixed or not fixed.
+
+## 6. Rework rules
+
+- A round is complete only when all four lens verdicts exist. Never resume the builder mid-round.
+- Any CHANGES verdict starts a rework round. The builder answers every finding in the build report log: what was changed, or why not.
+- Maximum **3 rounds** in total (round 1 plus 2 rework rounds).
+- If any lens still says CHANGES after round 3, stop. The PM agent writes the ready-to-merge note marked **NOT READY** with the open findings, and the human decides.
+- If the builder is blocked (spec contradiction, a decision only the human can make, an environment failure), the build report starts with `STATUS: BLOCKED` and says exactly what is needed.
+
+## 7. Always flagged for the human
+
+These always go to the human, even when every lens passes. The spec lists the ones expected, the build report lists the ones touched, and the ready-to-merge note names them.
+
+- Auth, permissions, signed links, secrets handling
+- Money: paid services, API keys, spend, anything that could bill
+- Deploy or runtime config: containers, CI workflows, build scripts, ports or bind addresses
+- Database schema changes and migrations
+- Messages to real people or real providers (email, SMS, voice, outbound webhooks)
+- Writing production data
+- New dependencies
+- Public exposure: making a repo public, publishing packages or images, opening network access
+- Safety-critical logic
+- Product or business decisions (thresholds, prices, public copy)
+
+Approval rules:
+
+- Nothing is sent, published, paid for, deployed or merged to `main` without the human's explicit OK.
+- An agent's say-so is never approval. Only the human's own words count.
+- There is no automatic merge to `main`.
+
+## 8. Measure
+
+For every pull request, log outside the notes: agent hours per role, coding-agent runs and model per role, review rounds, and the human's review time. These show whether the factory is working.
+
+## 9. Related files
+
+- `templates/spec.md`, `templates/build-report.md`, `templates/review.md`, `templates/ready-to-merge.md`
+- `standards/definition-of-done.md`
+- `standards/ci-minutes.md`
