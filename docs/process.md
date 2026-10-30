@@ -48,7 +48,7 @@ flowchart TD
 3. **Brief.** One page: the problem, who it is for, what done looks like. Nothing is ready to build until the human approves the brief.
 4. **Spec.** The PM agent writes the spec from `templates/spec.md`. Every acceptance criterion has a Verify line. The spec must pass the Definition of Ready (in the template) before build starts.
 5. **Build.** The developer agent builds on a branch, makes the simplest change that fully meets the spec, runs the repo's checks, and opens a pull request into `test`. The pull request description starts with a build report from `templates/build-report.md`.
-6. **Local verification.** The developer agent runs `scripts/verify-local.sh` (lint, types, unit, functional and end-to-end tests, security scans) on the exact head commit and adds the Local verification block to the pull request. No stacked pull requests: each one targets `test` and gets a fresh block.
+6. **Local verification.** The developer agent runs `scripts/verify-local.sh` (lint, types, unit, functional tests, the Playwright e2e suite under `tests/e2e/`, security scans) on the exact head commit and adds the Local verification block to the pull request. No stacked pull requests: each one targets `test` and gets a fresh block.
 7. **Review.** An independent reviewer runs the four-lens review from `templates/review.md` and writes one verdict per lens.
 8. **Rework.** Any CHANGES verdict sends the pull request back to the builder with the review file. See section 5.
 9. **Merge to `test`.** When all four lenses PASS and the Local verification block is all PASS on the same head commit, an agent merges the pull request into `test`. No human is needed for this step, unless an always-flagged item applies (section 7).
@@ -67,6 +67,10 @@ flowchart TD
 | Four-lens review | All four lenses `VERDICT: PASS` | Reviewer |
 | Merge to `test` | Review PASS and Local verification on the same commit, no unresolved flags | Developer agent |
 | Merge to `main` | The human has tested `test` and approves | Human |
+
+### Playwright e2e rule (2026-10-30)
+
+All user-facing testing uses Playwright. Core and every bot repo keep a committed suite under `tests/e2e/`, run on desktop and mobile with the stub LLM by default, plus one opt-in live-provider smoke test (marker or env flag, cheap model, keys never logged). Every failure saves a screenshot and a trace. `verify-local.sh` runs the suite and it must PASS before any merge to `test`; the Local verification block lists the suite result (passes per project) and the head SHA. The Reviewer's evidence run includes the suite, and any new user-facing behaviour adds or updates its e2e tests in the same pull request. Full text: `standards/definition-of-done.md`.
 
 ## 5. The four review lenses
 

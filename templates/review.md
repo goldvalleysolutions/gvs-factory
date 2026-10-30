@@ -6,7 +6,7 @@ _Run by a reviewer that did not write the code. Save as `review-round-<N>.md` wi
 **Reviewer:** <name or agent> · **Date and time:** <...>
 
 ## Ground rules
-1. **Run it once, before the lenses.** Outside the lens runs, the Reviewer checks out the branch, runs the check commands from `AGENTS.md` (or `scripts/verify-local.sh`), runs the tests, and starts the app for anything a user or another system can see. Record pass/fail evidence for each item on the spec's acceptance checklist, reproducing at least one yourself. If you could not run something, say so and why. Then run each lens fresh and stateless with only the diff, the checklist with this evidence, and its own lens section below. A lens never sees another lens's output; combine the verdicts only after all four return.
+1. **Run it once, before the lenses.** Outside the lens runs, the Reviewer checks out the branch, runs the check commands from `AGENTS.md` (or `scripts/verify-local.sh`), runs the tests including the Playwright e2e suite under `tests/e2e/` (desktop and mobile projects, stub LLM; record passes per project and the head SHA), and starts the app for anything a user or another system can see. Record pass/fail evidence for each item on the spec's acceptance checklist, reproducing at least one yourself. If you could not run something, say so and why. Then run each lens fresh and stateless with only the diff, the checklist with this evidence, and its own lens section below. A lens never sees another lens's output; combine the verdicts only after all four return.
 2. **Each lens gets its own verdict line**, exactly `VERDICT: PASS` or `VERDICT: CHANGES`.
 3. **CHANGES only for real problems:** a bug, a spec gap, a failing check, a security issue, or a clear convention break. A failing check is always CHANGES.
 4. **Do not block on taste.** Style preferences, naming and "nice to have" ideas go under Notes, never Findings.
@@ -39,7 +39,7 @@ _Look at: does what the spec requires and nothing more; edge cases, missing awai
 ## Lens 3 · Tests and evals
 VERDICT: PASS | CHANGES
 
-_Look at: every AC in the spec has a test or a reproducible check; tests fail without the change (spot-check one by reverting it locally); the new tests run in the local verification; no network or paid calls in tests; timer logic tested with controlled time, not sleeps; existing suites still pass unchanged._
+_Look at: every AC in the spec has a test or a reproducible check; any new user-facing behaviour adds or updates Playwright e2e tests under `tests/e2e/` in this PR (missing e2e coverage is CHANGES); the e2e suite PASSes on desktop and mobile in the evidence run, with screenshot and trace saved on failure; tests fail without the change (spot-check one by reverting it locally); the new tests run in the local verification; no network or paid calls in tests; timer logic tested with controlled time, not sleeps; existing suites still pass unchanged._
 
 ### Findings
 ### Notes

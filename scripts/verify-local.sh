@@ -5,7 +5,8 @@
 #        VERIFY_DIRS="frontend backend"  directories to check (default: auto-detect . and first-level subdirs)
 #        VERIFY_COMPOSE_FILE=compose.yaml  compose file (default: auto-detect compose.yaml/yml, docker-compose.yaml/yml at the root)
 #        VERIFY_COMPOSE_TEST="cmd"  run cmd against the stack (docker compose up -d --wait ... down -v)
-#        VERIFY_E2E_CMD="cmd"  end-to-end command (e.g. npx playwright test); runs while the compose stack is up, if any
+#        VERIFY_E2E_CMD="cmd"  end-to-end command; default "npx playwright test" when tests/e2e/ exists; runs while the compose stack is up, if any
+#          (no tests/e2e/ and no VERIFY_E2E_CMD: FAIL, or SKIP with --allow-missing)
 #          (COMPOSE_PROJECT_NAME and COMPOSE_FILE are exported to both, so inner `docker compose` calls hit the stack)
 #        VERIFY_DOCKER_TARGET=app  build target for ./Dockerfile; VERIFY_DOCKERFILES="Dockerfile.worker"  extra Dockerfiles
 #        VERIFY_DOCKER_BUILD_ARGS="--network host"  extra flags for docker build (not compose)
@@ -18,7 +19,7 @@ ALLOW_MISSING=0
 for arg in "$@"; do
   case "$arg" in
     --allow-missing) ALLOW_MISSING=1 ;;
-    -h|--help) sed -n '2,14p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,15p' "$0"; exit 0 ;;
     *) echo "unknown argument: $arg" >&2; exit 2 ;;
   esac
 done
@@ -179,6 +180,9 @@ for f in ${VERIFY_DOCKERFILES:-}; do
   else add_row "docker build -f $f" "FAIL (file not found)" "0s"; FAILED=1; fi
 done
 
+# Playwright e2e suite (standing rule 2026-10-30): default command when tests/e2e/ exists
+if [ -z "${VERIFY_E2E_CMD:-}" ] && [ -d tests/e2e ]; then VERIFY_E2E_CMD="npx playwright test"; fi
+
 # Containers: compose stack and end-to-end tests (opt-in through env vars)
 COMPOSE_FILE_FOUND=${VERIFY_COMPOSE_FILE:-}
 if [ -z "$COMPOSE_FILE_FOUND" ]; then
@@ -204,6 +208,10 @@ fi
 if [ -n "${VERIFY_E2E_CMD:-}" ]; then
   if [ -n "$COMPOSE_FILE_FOUND" ] && [ $STACK_UP -eq 0 ]; then skip . "$VERIFY_E2E_CMD" "compose stack not up"
   else run . "$VERIFY_E2E_CMD" bash -c "$VERIFY_E2E_CMD"; fi
+elif [ $ALLOW_MISSING -eq 1 ]; then
+  add_row "playwright e2e (tests/e2e/)" "SKIP (no tests/e2e/ in this repo and VERIFY_E2E_CMD not set; allowed by --allow-missing)" "0s"
+else
+  add_row "playwright e2e (tests/e2e/)" "FAIL (no tests/e2e/ in this repo and VERIFY_E2E_CMD not set; add the suite or pass --allow-missing)" "0s"; FAILED=1
 fi
 if [ -n "${COMPOSE+x}" ]; then
   # Always tear down, even after a failed up or test.
