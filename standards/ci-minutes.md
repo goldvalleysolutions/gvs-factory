@@ -113,3 +113,7 @@ jobs:
 3. **Path filters.** Build only when the Dockerfile or source changes; never on docs-only changes.
 4. **Cache container builds.** Use `docker/build-push-action` with `cache-from: type=gha` and `cache-to: type=gha,mode=max`.
 5. **Document it.** Record these rules in each repo's `AGENTS.md`.
+
+## Box-local builds (2026-10-31)
+
+Builds run on the box, not in cloud agents or CI (cloud agents are optional). `verify-local.sh` plus the Playwright suite run on the box before every push. CI runs only on pull requests into `test`/`main` and on the release/deploy pushes to `main`.
