@@ -17,9 +17,15 @@ This document defines how a change moves from an idea to the `main` branch. It i
 |---|---|---|
 | Human approver | Person | Sets direction, approves briefs and specs, creates repos, holds secrets and permissions, tests `test` hands-on, decides every flagged item, and is the only one who merges to `main`. |
 | PM agent | AI agent | Triages and ranks requests, writes the brief and the spec with acceptance criteria, spot-checks evidence, and writes the ready-to-merge note. |
-| Developer agent | AI agent | Builds the change (directly or by launching a coding agent), opens the pull request with a build report, and handles rework. |
+| Developer agent | AI agent | Builds the change locally on the shared Linux box (the standard build path; a Cursor cloud agent is optional, used only if cloud agents are working), opens the pull request with a build report, and handles rework. |
 | Reviewer | AI agent run, independent of the builder | Runs the branch once for evidence, runs the four lenses in isolation, and combines one verdict per lens. |
 | CI | Automation | Builds and publishes images, deploys and releases. It does not run tests on pull requests; validation is local (`standards/ci-minutes.md`). |
+
+### Where builds run (2026-10-31)
+
+Local builds on the box are the standard way we build. The developer agent clones or reuses a checkout on the shared Linux box, builds, and verifies there. Cursor cloud agents are optional: use one only if cloud agents are working again and the task suits it, and its work still goes through the same box-local verification before push and merge.
+
+**Box-local build rule (Mike, 2026-10-31 retro):** `verify-local.sh` plus the Playwright suite run on the box before every push.
 
 ## 3. How a job flows
 
@@ -47,7 +53,7 @@ flowchart TD
 2. **Triage.** The PM agent ranks it against the current goals. Off-goal items are parked, not deleted, with a note on what would bring them back.
 3. **Brief.** One page: the problem, who it is for, what done looks like. Nothing is ready to build until the human approves the brief.
 4. **Spec.** The PM agent writes the spec from `templates/spec.md`. Every acceptance criterion has a Verify line. The spec must pass the Definition of Ready (in the template) before build starts.
-5. **Build.** The developer agent builds on a branch, makes the simplest change that fully meets the spec, runs the repo's checks, and opens a pull request into `test`. The pull request description starts with a build report from `templates/build-report.md`.
+5. **Build.** The developer agent builds on a branch in a local checkout on the box (primary; cloud agents are optional), makes the simplest change that fully meets the spec, runs the repo's checks, runs `scripts/verify-local.sh` plus the Playwright suite on the box before every push, and opens a pull request into `test`. The pull request description starts with a build report from `templates/build-report.md`.
 6. **Local verification.** The developer agent runs `scripts/verify-local.sh` (lint, types, unit, functional tests, the Playwright e2e suite under `tests/e2e/`, security scans) on the exact head commit and adds the Local verification block to the pull request. No stacked pull requests: each one targets `test` and gets a fresh block.
 7. **Review.** An independent reviewer runs the four-lens review from `templates/review.md` and writes one verdict per lens.
 8. **Rework.** Any CHANGES verdict sends the pull request back to the builder with the review file. See section 5.
