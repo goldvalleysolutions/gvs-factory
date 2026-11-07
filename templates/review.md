@@ -48,7 +48,7 @@ _Look at: auth on every new endpoint; signed links (signing, expiry, tampering, 
 ## Lens 2 · Code
 VERDICT: PASS | CHANGES
 
-_Look at: does what the spec requires and nothing more; edge cases, missing awaits, unhandled errors, swallowed exceptions; reuse of existing helpers and patterns; conventions in `AGENTS.md` and neighbouring code; docs and `.env.example` updated; commits are small and nothing stray is committed._
+_Look at: backend architecture and code consistency; does what the spec requires and nothing more; edge cases, missing awaits, unhandled errors, swallowed exceptions; reuse of existing helpers and patterns; conventions in `AGENTS.md` and neighbouring code; docs and `.env.example` updated; commits are small and nothing stray is committed._
 
 ### Findings
 ### Notes

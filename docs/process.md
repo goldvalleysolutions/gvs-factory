@@ -95,7 +95,7 @@ Each lens gets exactly one line, `VERDICT: PASS` or `VERDICT: CHANGES`, followed
 
 1. **Security.** Auth on new endpoints, input validation, injection and XSS, secrets in commits, data exposure in logs and pages, outbound calls, new dependencies, exposed ports.
 2. **Code.** Backend architecture and code consistency; does what the spec asks and nothing more; handles errors and edge cases; reuses existing patterns; follows the repo's conventions; updates docs.
-3. **Tests and evals.** Every criterion has a test or a reproducible check, tests fail without the change, tests run in the local verification, no network or paid calls in tests.
+3. **Tests and evals.** Independently validates requirements; executes bad-input and failure-path (negative) cases; checks trustworthiness; every criterion has a test or a reproducible check; tests fail without the change; tests run in the local verification; no network or paid calls in tests.
 4. **UX/Consistency.** Frontend patterns, flow, style, brand, accessibility and usability; the flow works with no dead ends; loading, empty and error states are useful; copy is short and plain; keyboard and small-screen use work. A change with nothing user-facing gets PASS with a note.
 
 Lens isolation:
