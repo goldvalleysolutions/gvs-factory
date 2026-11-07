@@ -18,6 +18,6 @@ Example:
 Rules:
 - Cite only reviewer or Local verification evidence, never the builder's self-report.
 - The Local verification block must be on the exact head. No stacked pull requests.
-- All five lenses (Security, Code, Tests, UX, Consistency) must PASS.
+- All five lenses (Security, Code, Tests and evals, UX, Consistency) must PASS.
 - Log, outside this note: agent hours, coding-agent runs and model per role, and the human's review time.
 - Detail (AC tables, commands) stays in the review on the pull request. Link it; do not paste it here.
