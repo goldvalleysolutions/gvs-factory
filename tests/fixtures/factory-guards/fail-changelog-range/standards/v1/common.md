@@ -1,5 +1,9 @@
 # Common standards
 
-### CM-01 Example rule [APPROVED: Mike, direct, Nov 2026]
+### CM-01 First rule [APPROVED: https://example.com/spec]
 
-Only one CM rule exists.
+This is the first rule.
+
+### CM-02 Second rule [APPROVED: https://example.com/spec]
+
+This is the second rule.

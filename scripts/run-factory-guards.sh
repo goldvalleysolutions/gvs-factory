@@ -102,15 +102,18 @@ guard_canonical_lens_names() {
       if echo "$line" | grep -q "Tests and evals"; then
         continue
       fi
-      # Check for lens-list patterns with bare "Tests"
+      # Check for lens-list patterns with bare "Tests" (only report once per line)
+      local reported=0
       if echo "$line" | grep -Eq 'Security[[:space:]]*[/,|][[:space:]]*Code[[:space:]]*[/,|][[:space:]]*Tests[[:space:]]*[/,|]'; then
         fail "canonical-lens-names: bare 'Tests' in lens list (should be 'Tests and evals'): $(basename "$file")"
         found=1
+        reported=1
       fi
-      if echo "$line" | grep -Eq 'Tests[[:space:]]*[/,|][[:space:]]*(UX|Consistency)'; then
+      if [ $reported -eq 0 ] && echo "$line" | grep -Eq 'Tests[[:space:]]*[/,|][[:space:]]*(UX|Consistency)'; then
         if ! echo "$line" | grep -q "Tests and evals"; then
           fail "canonical-lens-names: bare 'Tests' in lens list (should be 'Tests and evals'): $(basename "$file")"
           found=1
+          reported=1
         fi
       fi
       # Check schema enum
@@ -188,6 +191,10 @@ guard_citation_resolver() {
     path=$(echo "$match" | sed -n 's/.*\[APPROVED: *\([^],]*\).*/\1/p' | xargs 2>/dev/null || true)
     # Skip non-path sources
     if [[ -z "$path" ]] || [[ "$path" == *"Mike"* ]] || [[ "$path" == *"direct"* ]] || [[ "$path" == *"references"* ]]; then
+      continue
+    fi
+    # Skip URLs (http://, https://)
+    if [[ "$path" == http://* ]] || [[ "$path" == https://* ]]; then
       continue
     fi
     # Skip section references (e.g., "docs/process.md section 7")

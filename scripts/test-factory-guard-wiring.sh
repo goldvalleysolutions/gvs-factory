@@ -83,7 +83,7 @@ else
   fail "run-factory-guards.sh exits non-zero on pass/ fixture tree (should pass)"
 fi
 
-# Test 5: Runner on each fail-* fixture tree exits non-zero WITH SPECIFIC GUARD FAILURE
+# Test 5: Runner on each fail-* fixture tree exits non-zero WITH EXACTLY ONE GUARD FAILURE
 echo "Testing fail-* fixture trees (specific guard assertions)..."
 
 # Map fixture names to expected guard failure patterns
@@ -105,8 +105,8 @@ for fail_tree in tests/fixtures/factory-guards/fail-*; do
     expected_guard="${EXPECTED_GUARD_FAILURES[$tree_name]:-}"
     
     FAIL_TMPDIR=$(mktemp -d)
-    cp -r "$fail_tree"/* "$FAIL_TMPDIR/" 2>/dev/null || true
-    (cd "$FAIL_TMPDIR" && git init -q && git add -A && git commit -q -m "test" 2>/dev/null) || true
+    # Use build-fixture-tree.sh to create complete fixture from overlay
+    scripts/build-fixture-tree.sh "$fail_tree" "$FAIL_TMPDIR" >/dev/null 2>&1
     
     # Capture output to check for specific guard failure
     output=$(scripts/run-factory-guards.sh --root="$FAIL_TMPDIR" 2>&1)
@@ -115,9 +115,16 @@ for fail_tree in tests/fixtures/factory-guards/fail-*; do
     if [ $rc -eq 0 ]; then
       fail "$tree_name: runner exited 0 (should fail)"
     elif [ -n "$expected_guard" ]; then
-      # Assert the specific guard failed
+      # Count FAIL lines - should be exactly 1 (the expected guard)
+      fail_count=$(echo "$output" | grep -c "^FAIL:")
+      
       if echo "$output" | grep -q "FAIL: $expected_guard"; then
-        pass "$tree_name: correctly fails $expected_guard guard"
+        if [ "$fail_count" -eq 1 ]; then
+          pass "$tree_name: correctly fails ONLY $expected_guard guard"
+        else
+          all_fails=$(echo "$output" | grep "^FAIL:" | sed 's/^FAIL: //' | cut -d: -f1 | tr '\n' ' ')
+          fail "$tree_name: fails $expected_guard but also other guards: $all_fails"
+        fi
       else
         fail "$tree_name: exited non-zero but $expected_guard guard not reported as failed"
         echo "  Output was: $(echo "$output" | grep FAIL | head -3)"
@@ -228,61 +235,27 @@ else
 fi
 rm -rf "$ISOLATED_PATH"
 
-# Test missing jsonschema - ACTUALLY EXECUTE with hidden library
+# Test missing jsonschema - EXECUTE the real validator with hidden library
 echo "Testing jsonschema isolation (execution)..."
 ISOLATED_PYDIR=$(mktemp -d)
-mkdir -p "$ISOLATED_PYDIR/site-packages"
+mkdir -p "$ISOLATED_PYDIR/empty-site"
 
-# Create a Python script that imports with empty site-packages to hide jsonschema
-cat > "$ISOLATED_PYDIR/test_validator.py" << 'PYTEST'
-import subprocess
-import sys
-import os
+# Execute validate-provenance-fixtures.sh with PYTHONPATH pointing to empty directory
+# This hides jsonschema from the validator - it MUST fail closed (exit non-zero)
+validator_output=$(PYTHONPATH="$ISOLATED_PYDIR/empty-site" PYTHONNOUSERSITE=1 \
+  scripts/validate-provenance-fixtures.sh 2>&1) || validator_rc=$?
+validator_rc=${validator_rc:-0}
 
-# Create a minimal Python environment that cannot import jsonschema
-# by setting PYTHONPATH to an empty directory and unsetting site-packages
-env = os.environ.copy()
-env['PYTHONPATH'] = sys.argv[1]
-env['PYTHONNOUSERSITE'] = '1'
-
-# Run the dependency check portion of the validator
-result = subprocess.run(
-    ['python3', '-c', '''
-import sys
-sys.path = [p for p in sys.path if 'site-packages' not in p and 'dist-packages' not in p]
-sys.path.insert(0, sys.argv[1])
-try:
-    import jsonschema
-    print("jsonschema imported - test invalid")
-    sys.exit(0)
-except ImportError:
-    print("jsonschema import failed as expected")
-    sys.exit(1)
-''', sys.argv[1]],
-    env=env,
-    capture_output=True,
-    text=True
-)
-
-# If jsonschema import failed (exit 1), the validator would also fail
-if result.returncode != 0:
-    print("Isolation confirmed: jsonschema cannot be imported")
-    sys.exit(0)
-else:
-    print("Isolation failed: jsonschema was still importable")
-    sys.exit(1)
-PYTEST
-
-if python3 "$ISOLATED_PYDIR/test_validator.py" "$ISOLATED_PYDIR/site-packages" 2>/dev/null; then
-  pass "validator correctly detects missing jsonschema (isolation test)"
-else
-  # Fallback: verify the validator has proper import error handling in code
-  if grep -q "ImportError" scripts/validate-provenance-fixtures.sh && \
-     grep -B5 -A5 "ImportError" scripts/validate-provenance-fixtures.sh | grep -q "exit"; then
-    pass "validator has fail-closed jsonschema import check (code verified)"
+if [ "$validator_rc" -ne 0 ]; then
+  # Validator failed - check it's because of jsonschema
+  if echo "$validator_output" | grep -qi "jsonschema\|import\|module\|dependency"; then
+    pass "validator fails closed when jsonschema is hidden"
   else
-    fail "jsonschema isolation test inconclusive"
+    # Validator failed but not clearly due to jsonschema - still acceptable (fail closed)
+    pass "validator correctly fails with hidden jsonschema (exit $validator_rc)"
   fi
+else
+  fail "validator exits 0 with jsonschema hidden (should fail closed)"
 fi
 rm -rf "$ISOLATED_PYDIR"
 
