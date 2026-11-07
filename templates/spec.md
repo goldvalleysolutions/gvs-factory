@@ -60,11 +60,13 @@ _Each one is one observable behaviour plus how to check it, runnable by someone 
 
 - **AC-G.3** No secrets, keys, or real personal data are committed; `.env` is not committed.
   **Verify:** `git diff <base>...HEAD --name-only | grep -x .env` returns no output; a secret scan of the diff returns no findings.
-  **Negative:** A committed secret is detected. `echo "API_KEY=sk-test-123" >> .env && git add .env && gitleaks detect --source .` exits non-zero.
+  **Negative:** A committed secret is detected. In an isolated temp git repo: `cd $(mktemp -d) && git init && echo "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" > token.txt && git add token.txt && git commit -m "test" && gitleaks detect --source .` exits non-zero. (The `ghp_` pattern is a documented gitleaks-detectable synthetic example, not a real token.)
+  **Positive (clean):** `cd $(mktemp -d) && git init && echo "no secrets here" > readme.txt && git add readme.txt && git commit -m "test" && gitleaks detect --source .` exits zero.
 
 - **AC-G.4** The default configuration makes zero paid or outbound calls to real providers.
   **Verify:** the named test or check for this repo.
-  **Negative:** An outbound call is detected. `grep -r "requests.get" app/ | grep -v "localhost"` returns matches if any exist.
+  **Negative:** An outbound call is blocked at runtime. `pytest tests/test_no_network.py::test_outbound_blocked` passes, where the test uses a socket-blocking fixture (e.g., `pytest-socket` with `--disable-socket`) and a deliberate `requests.get("https://example.com")` that asserts `SocketBlockedError` is raised.
+  **Positive (clean):** `pytest tests/test_no_network.py::test_no_outbound_in_code` passes, where the test runs with the socket-blocking fixture and the actual code makes no outbound calls.
 
 - **AC-G.5** Docs updated where behaviour changed (README, `AGENTS.md`, `.env.example`).
   **Verify:** `git diff <base>...HEAD --stat` lists them; the reviewer reads them.
