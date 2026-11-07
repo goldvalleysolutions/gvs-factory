@@ -108,7 +108,7 @@ Lens isolation:
 
 Review rules:
 
-- Run it, do not just read it. The Reviewer's evidence run reproduces at least one criterion; lenses judge that evidence and the diff, they do not run the code.
+- Run it, do not just read it. The Reviewer's evidence run reproduces at least one criterion. The Tests and evals lens re-executes the matrix's negative and environment cases and lists its commands; the other lenses judge the evidence and the diff.
 - CHANGES only for real problems: a bug, a spec gap, a failing check, a security issue, or a clear convention break. A failing check is always CHANGES.
 - Style preferences and pre-existing issues go under Notes, never Findings.
 - From round 2, the evidence run re-checks every earlier finding and records fixed or not fixed with the checklist, so each lens can judge it.
