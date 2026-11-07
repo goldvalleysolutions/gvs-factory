@@ -23,7 +23,7 @@ A bot adds only what its job needs: role prompt, skills, tools, and the third-pa
 ### BOT-05 Same shape everywhere
 All bots share the same structure and patterns: the `bot/` pack with role.md, bot.yaml, skills/, tools/, and theme.yaml. There are no one-off architectures.
 
-## Bot UI rules
+## Bot UI rules (all PROPOSED, non-blocking)
 
 ### BOT-06 Task-oriented shell, not marketing [PROPOSED: derived, needs Mike]
 Bot frontends inherit shared visual identity (colors, fonts) but use a task-oriented shell. Never copy website hero, service cards, marketing section alternation, or contact CTA into product task flow. Bot UI serves task completion, not sales.

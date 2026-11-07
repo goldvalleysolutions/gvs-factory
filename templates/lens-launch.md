@@ -9,14 +9,16 @@ _Prompt template for launching a review lens as a new cloud-agent run. Each lens
 1. **Start a NEW Cursor cloud agent** on the repo at the PR's **base ref** (not the PR branch). This ensures the reviewer has no access to the PR branch name or head commits in its default checkout.
 
 2. **Attach the sanitized bundle** as files:
-   - The diff from `gh api repos/{owner}/{repo}/compare/{base}...{head}` as a patch file
+   - The diff as a patch file: `gh api -H "Accept: application/vnd.github.v3.diff" repos/{owner}/{repo}/compare/{base}...{head} > bundle.diff`
    - The acceptance criteria with evidence results
    - The standards text (see below)
    - The evidence pack (verify-local output + screenshots)
 
+   **How to attach:** Save each bundle file on the orchestrator's machine. Pass them in the CloudAgent launch `files` parameter as `file://` URLs. The agent finds them under `uploads/`. Never paste the diff into the PR or the prompt.
+
 3. **Use this prompt template** with the lens-specific instructions.
 
-4. **Record provenance** in `review/<pr_number>-round<round_number>.json`:
+4. **Record provenance** in the project repo's `review/<pr_number>-round<round_number>.json`:
    - Agent ID and URL
    - Requested model (from the launch)
    - Reported model (from platform; may be "not reported")
@@ -55,7 +57,7 @@ You do NOT have:
 5. **Do not block on taste.** Style preferences go under Notes.
 6. **Do not block on pre-existing issues** the PR did not make worse.
 7. **Findings cite:** `path:line`, problem, rule ID (if standards violation), impact, fix.
-8. **State files and commands you used.** Any undisclosed repo access voids this lens.
+8. **State files and commands you used.** Any undisclosed repo access voids this lens. ("Voids" means the orchestrator discards that verdict and relaunches a fresh lens. A voided lens never counts as a PASS.)
 
 ### Lens-specific instructions
 
@@ -109,7 +111,7 @@ _For the orchestrator launching lens runs:_
 2. All five lenses get the same sanitized bundle.
 3. Do not include prior findings in any lens input.
 4. Wait for all five verdicts before combining.
-5. Record provenance in `review/<pr_number>-round<round_number>.json` using the schema.
+5. Record provenance in the project repo's `review/<pr_number>-round<round_number>.json` using the schema.
 6. Check closure against prior findings only after all verdicts are in.
 
 ### Model selection

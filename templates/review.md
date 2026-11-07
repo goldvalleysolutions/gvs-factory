@@ -29,6 +29,8 @@ In rounds 2 and 3, reviewers get a fresh bundle for the new head. Prior findings
 - The instruction not to read history or the PR is repeated in every lens prompt.
 - Each report must state the files and commands it used; any reference to commit messages or the PR body voids that lens.
 
+**What "voids" means:** The orchestrator discards that lens's verdict and relaunches a fresh lens. A voided lens never counts as a PASS.
+
 **Residual risk:** True sandboxing (no repo access, only the bundle) is not available. The design records this rather than claiming it.
 
 ## Ground rules
