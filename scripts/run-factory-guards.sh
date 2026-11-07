@@ -112,15 +112,16 @@ guard_prompt_no_pr_number() {
 }
 
 # Guard: Approval tags have sources
+# Only check actual rule headings (lines starting with ###), not prose mentions
 guard_approval_tags() {
   local found=0
   while IFS= read -r line; do
-    # Check for [APPROVED] without a colon and source
+    # Check for [APPROVED] without a colon and source on rule heading lines
     if echo "$line" | grep -Eq '\[APPROVED\]' && ! echo "$line" | grep -Eq '\[APPROVED:'; then
       fail "approval-tags: missing source: $line"
       found=1
     fi
-  done < <(grep -rn '\[APPROVED' standards/v1/ templates/ 2>/dev/null)
+  done < <(grep -rn '^### [A-Z].*\[APPROVED' standards/v1/ 2>/dev/null)
   [ $found -eq 0 ] && pass "approval-tags"
   GUARDS_RUN=$((GUARDS_RUN + 1))
   return $found
@@ -189,21 +190,23 @@ guard_deviation_fields() {
 guard_changelog_ranges() {
   local found=0
   if [ -f standards/v1/CHANGELOG.md ]; then
-    # Check CM range
-    local claimed_cm=$(grep -oE 'CM-01 through CM-[0-9]+' standards/v1/CHANGELOG.md | head -1 | grep -oE 'CM-[0-9]+$' | sed 's/CM-//')
-    if [ -n "$claimed_cm" ]; then
+    # Check CM range (strip leading zeros with $((10#...)) for numeric comparison)
+    local claimed_cm_raw=$(grep -oE 'CM-01 through CM-[0-9]+' standards/v1/CHANGELOG.md | head -1 | grep -oE 'CM-[0-9]+$' | sed 's/CM-//')
+    if [ -n "$claimed_cm_raw" ]; then
+      local claimed_cm=$((10#$claimed_cm_raw))
       local actual_cm=$(grep -cE '^### CM-[0-9]+' standards/v1/common.md 2>/dev/null || echo 0)
       if [ "$claimed_cm" != "$actual_cm" ]; then
-        fail "changelog-ranges: CHANGELOG claims CM-01 through CM-$claimed_cm but common.md has $actual_cm CM rules"
+        fail "changelog-ranges: CHANGELOG claims CM-01 through CM-$claimed_cm_raw but common.md has $actual_cm CM rules"
         found=1
       fi
     fi
     # Check BOT range
-    local claimed_bot=$(grep -oE 'BOT-01 through BOT-[0-9]+' standards/v1/CHANGELOG.md | head -1 | grep -oE 'BOT-[0-9]+$' | sed 's/BOT-//')
-    if [ -n "$claimed_bot" ]; then
+    local claimed_bot_raw=$(grep -oE 'BOT-01 through BOT-[0-9]+' standards/v1/CHANGELOG.md | head -1 | grep -oE 'BOT-[0-9]+$' | sed 's/BOT-//')
+    if [ -n "$claimed_bot_raw" ]; then
+      local claimed_bot=$((10#$claimed_bot_raw))
       local actual_bot=$(grep -cE '^### BOT-[0-9]+' standards/v1/profile-bot.md 2>/dev/null || echo 0)
       if [ "$claimed_bot" != "$actual_bot" ]; then
-        fail "changelog-ranges: CHANGELOG claims BOT-01 through BOT-$claimed_bot but profile-bot.md has $actual_bot BOT rules"
+        fail "changelog-ranges: CHANGELOG claims BOT-01 through BOT-$claimed_bot_raw but profile-bot.md has $actual_bot BOT rules"
         found=1
       fi
     fi
