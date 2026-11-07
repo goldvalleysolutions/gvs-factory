@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Validate provenance fixtures against the schema.
-# Exit 0 if valid-five passes and all invalid fixtures fail, exit 1 otherwise.
+# Exit 0 if valid fixtures pass and all invalid fixtures fail, exit 1 otherwise.
 #
 # REQUIRED: python3, jsonschema>=4.18 (with Draft202012Validator and minContains/maxContains)
 # Missing dependencies are FAIL, not SKIP.
@@ -16,30 +16,58 @@ if ! command -v python3 >/dev/null 2>&1; then
   exit 1
 fi
 
-# Check jsonschema with version and Draft202012Validator - FAIL if missing or too old
-python3 << 'PYCHECK'
+# Check jsonschema with actual minContains/maxContains capability probe - FAIL if missing or incapable
+if ! python3 << 'PYCHECK' 2>/dev/null; then
 import sys
 try:
     import jsonschema
     from jsonschema import Draft202012Validator
-    # Verify version >= 4.18 for minContains/maxContains support
     from packaging import version
     if version.parse(jsonschema.__version__) < version.parse("4.18"):
         print(f"FAIL: jsonschema {jsonschema.__version__} too old, need >= 4.18", file=sys.stderr)
         sys.exit(1)
+    # Actual capability probe: minContains/maxContains must work
+    test_schema = {
+        "type": "array",
+        "contains": {"const": "x"},
+        "minContains": 2,
+        "maxContains": 3
+    }
+    # Should pass: exactly 2 x's
+    Draft202012Validator(test_schema).validate(["x", "x"])
+    # Should pass: exactly 3 x's
+    Draft202012Validator(test_schema).validate(["x", "x", "x"])
+    # Should fail: only 1 x
+    try:
+        Draft202012Validator(test_schema).validate(["x"])
+        print("FAIL: minContains not enforced", file=sys.stderr)
+        sys.exit(1)
+    except jsonschema.ValidationError:
+        pass  # Expected
+    # Should fail: 4 x's exceeds maxContains
+    try:
+        Draft202012Validator(test_schema).validate(["x", "x", "x", "x"])
+        print("FAIL: maxContains not enforced", file=sys.stderr)
+        sys.exit(1)
+    except jsonschema.ValidationError:
+        pass  # Expected
 except ImportError as e:
     print(f"FAIL: {e} (required)", file=sys.stderr)
     sys.exit(1)
+except Exception as e:
+    print(f"FAIL: capability probe failed: {e}", file=sys.stderr)
+    sys.exit(1)
 sys.exit(0)
 PYCHECK
-
-if [ $? -ne 0 ]; then
+then
+  echo "FAIL: jsonschema>=4.18 with minContains/maxContains support required"
   exit 1
 fi
 
 FAILED=0
 
 # Python validator that uses sys.argv for paths (no string interpolation)
+# Includes contradiction checking for actual review records
 validate() {
   local fixture=$1 expect=$2 name
   name=$(basename "$fixture")
@@ -76,14 +104,17 @@ except FileNotFoundError:
 try:
     Draft202012Validator(schema).validate(data)
     
-    # Additional check: overall_verdict must match lens verdicts
+    # CONTRADICTION CHECK: overall_verdict must be consistent with lens verdicts
+    # This is enforced here for actual review records, not just schema
     if "lenses" in data and "overall_verdict" in data:
         all_pass = all(lens.get("verdict") == "PASS" for lens in data["lenses"])
         if data["overall_verdict"] == "PASS" and not all_pass:
             # Contradiction: claims PASS but not all lenses passed
+            print("Contradiction: overall_verdict PASS but not all lenses PASS", file=sys.stderr)
             sys.exit(1)
         if data["overall_verdict"] == "CHANGES" and all_pass:
             # Contradiction: claims CHANGES but all lenses passed
+            print("Contradiction: overall_verdict CHANGES but all lenses PASS", file=sys.stderr)
             sys.exit(1)
     
     sys.exit(0)
@@ -119,14 +150,40 @@ if [ ! -d "$FIXTURES" ]; then
   exit 1
 fi
 
-# Validate each fixture
-[ -f "$FIXTURES/valid-five.json" ] && validate "$FIXTURES/valid-five.json" "valid"
+# Required fixtures - FAIL if any are missing
+REQUIRED_VALID="valid-five.json"
+REQUIRED_INVALID="invalid-duplicate-lens.json invalid-missing-lens.json invalid-malformed.json invalid-overall-absent.json invalid-overall-contradiction.json"
+
+for f in $REQUIRED_VALID; do
+  if [ ! -f "$FIXTURES/$f" ]; then
+    echo "FAIL: required fixture missing: $f"
+    FAILED=1
+  fi
+done
+
+for f in $REQUIRED_INVALID; do
+  if [ ! -f "$FIXTURES/$f" ]; then
+    echo "FAIL: required fixture missing: $f"
+    FAILED=1
+  fi
+done
+
+if [ $FAILED -ne 0 ]; then
+  echo
+  echo "Some fixtures: FAIL (missing required fixtures)"
+  exit 1
+fi
+
+# Validate required fixtures
+validate "$FIXTURES/valid-five.json" "valid"
+validate "$FIXTURES/invalid-duplicate-lens.json" "invalid"
+validate "$FIXTURES/invalid-missing-lens.json" "invalid"
+validate "$FIXTURES/invalid-malformed.json" "invalid"
+validate "$FIXTURES/invalid-overall-absent.json" "invalid"
+validate "$FIXTURES/invalid-overall-contradiction.json" "invalid"
+
+# Optional fixtures
 [ -f "$FIXTURES/valid-all-pass-overall-pass.json" ] && validate "$FIXTURES/valid-all-pass-overall-pass.json" "valid"
-[ -f "$FIXTURES/invalid-duplicate-lens.json" ] && validate "$FIXTURES/invalid-duplicate-lens.json" "invalid"
-[ -f "$FIXTURES/invalid-missing-lens.json" ] && validate "$FIXTURES/invalid-missing-lens.json" "invalid"
-[ -f "$FIXTURES/invalid-malformed.json" ] && validate "$FIXTURES/invalid-malformed.json" "invalid"
-[ -f "$FIXTURES/invalid-overall-absent.json" ] && validate "$FIXTURES/invalid-overall-absent.json" "invalid"
-[ -f "$FIXTURES/invalid-overall-contradiction.json" ] && validate "$FIXTURES/invalid-overall-contradiction.json" "invalid"
 [ -f "$FIXTURES/invalid-all-pass-overall-changes.json" ] && validate "$FIXTURES/invalid-all-pass-overall-changes.json" "invalid"
 
 echo

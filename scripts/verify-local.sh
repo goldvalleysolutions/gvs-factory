@@ -233,6 +233,14 @@ else
   FAILED=1
 fi
 
+# Factory guard wiring tests
+if [ -f "$ROOT/scripts/test-factory-guard-wiring.sh" ]; then
+  run . "factory wiring tests" "$ROOT/scripts/test-factory-guard-wiring.sh"
+else
+  add_row "factory wiring tests" "FAIL (scripts/test-factory-guard-wiring.sh not found)" "0s"
+  FAILED=1
+fi
+
 [ $DIRTY -eq 1 ] && FAILED=1
 
 cat <<OUT
