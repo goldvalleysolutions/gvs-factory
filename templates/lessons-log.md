@@ -1,12 +1,12 @@
 # Lessons log
 
-_Each row records a candidate lesson from factory outputs. Only Mike-approved lessons feed spec prompts, patterns, and regression checks. No agent self-approves policy._
+_Each row records a lesson from factory outputs. Lessons are facts about defects or reviewer misses that can be logged, analyzed, and used to clarify or test existing approved requirements. New policy or standards changes need Mike's approval and are never adopted automatically._
 
 ## Lessons
 
-| ID | Source | Evidence | Class | Disposition | Approval provenance | Applied to |
-|---|---|---|---|---|---|---|
-| L001 | <artifact path:line> | <verbatim evidence from artifact> | dev mistake / reviewer miss / unsupported finding | validated / rejected / pending | <approval reference or "pending"> | <where applied: spec template, pattern, matrix row, or "not yet"> |
+| ID | Source | Evidence | Class | Type | Applied to |
+|---|---|---|---|---|---|
+| L001 | <artifact path:line> | <verbatim evidence from artifact> | dev mistake / reviewer miss / unsupported finding | clarification / new-policy | <where applied, or "not yet"> |
 
 ## Definitions
 
@@ -19,22 +19,21 @@ _Each row records a candidate lesson from factory outputs. Only Mike-approved le
 - **reviewer miss:** A defect the review panel should have caught but did not.
 - **unsupported finding:** A finding that was raised but later shown to be incorrect or not applicable.
 
-**Disposition:**
-- **validated:** Mike approved; the lesson feeds spec prompts, patterns, or regression checks.
-- **rejected:** Mike reviewed and declined; the lesson is not applied.
-- **pending:** Awaiting Mike's review; the lesson is not applied until validated.
+**Type:**
+- **clarification:** Clarifies or tests an existing approved requirement. Does not require Mike's approval to apply.
+- **new-policy:** Proposes a new policy, standard, or requirement. Requires Mike's approval before adoption.
 
-**Approval provenance:** Reference to Mike's approval (e.g., "Mike, 2026-11-05, Slack thread #factory-process"). Pending lessons have no provenance yet.
-
-**Applied to:** Where the validated lesson has been incorporated:
-- Spec template (`templates/spec.md`)
-- Reference pattern in `templates/architect-handoff.md`
-- Regression check row in a test matrix
+**Applied to:** Where the lesson has been incorporated:
+- Regression check row in a test matrix (clarification of existing requirement)
+- Known pitfall in a spec (clarification of existing requirement)
+- Spec template (`templates/spec.md`) — new-policy only with approval
+- Reference pattern in `templates/architect-handoff.md` — new-policy only with approval
+- Standards document — new-policy only with approval
 - Not yet applied
 
 ## Rules
 
-1. **No agent self-approves policy.** An agent may propose a lesson (disposition: pending), but only Mike can validate it.
-2. **Only validated lessons are applied.** Pending and rejected lessons do not feed spec prompts, patterns, or regression checks.
-3. **Evidence is verbatim.** Do not paraphrase or summarize the source evidence.
-4. **Provenance is required.** A validated lesson must cite the approval reference.
+1. **Clarifications apply without approval.** Lessons that clarify or test existing approved requirements (class: dev mistake, reviewer miss, or unsupported finding; type: clarification) can be logged and applied to matrix rows, known pitfalls, and regression checks without Mike approving each one.
+2. **New policy requires Mike's approval.** Any lesson that proposes a new policy, standard, or requirement (type: new-policy) must have Mike's explicit approval before adoption. Record the approval reference (e.g., "Mike, 2026-11-05, Slack thread #factory-process").
+3. **New policy is never automatic.** Agents may propose new-policy lessons, but they are never adopted automatically. Only Mike can approve them.
+4. **Evidence is verbatim.** Do not paraphrase or summarize the source evidence.

@@ -11,7 +11,7 @@ A change is done when every item below is true. The PM agent checks items 1 to 1
 7. **No secrets or real personal data.** No keys, tokens or `.env` files committed. Examples use fictional data.
 8. **Docs updated.** README, `AGENTS.md` and example config reflect any changed behaviour.
 9. **Flags named.** Every always-flagged item the change touches is listed in the ready-to-merge note, and any product decisions are defaults in config, not hard-coded.
-10. **Lessons recorded.** Where applicable, candidate lessons are recorded in `templates/lessons-log.md` with source, evidence, class, and disposition. Only Mike-approved lessons feed spec prompts, patterns, and regression checks.
+10. **Lessons recorded.** Where applicable, lessons are recorded in `templates/lessons-log.md` with source, evidence, class, and type. Lessons clarifying existing requirements can be applied to matrix rows and known pitfalls without approval; new policy or standards changes require Mike's approval and are never adopted automatically.
 11. **Playwright e2e suite passes.** The repo's `tests/e2e/` Playwright suite (desktop and mobile, stub LLM) PASSes in `scripts/verify-local.sh` on the head, the Local verification block shows passes per project and the head SHA, and any new user-facing behaviour has new or updated e2e tests in this pull request. See the rule below.
 12. **Human approval.** The human has tried the change on `test` and merged it to `main`.
 

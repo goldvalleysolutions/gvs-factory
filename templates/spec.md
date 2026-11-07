@@ -70,13 +70,13 @@ _Tick the ones this PR will trigger, so the human knows where to look first. The
 - [ ] Product or business decision (thresholds, prices, public copy)
 
 ## 8. Known pitfalls (from lessons log)
-_Pull in validated lessons from `templates/lessons-log.md` that apply to this work. Only Mike-approved lessons appear here._
+_Pull in lessons from `templates/lessons-log.md` that apply to this work. Lessons clarifying existing requirements can be used directly; new-policy lessons require Mike's approval._
 
-| Lesson ID | Summary | How it applies here |
-|---|---|---|
-| — | — | — |
+| Lesson ID | Summary | Type | How it applies here |
+|---|---|---|---|
+| — | — | clarification / new-policy | — |
 
-_If no validated lessons apply, write "None applicable."_
+_If no lessons apply, write "None applicable."_
 
 ## 9. Definition of Ready (PM agent ticks before build)
 - [ ] Every AC has a Verify line with an exact command or check

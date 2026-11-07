@@ -63,11 +63,15 @@ flowchart TD
 ## 3a. Learning loop
 
 After each job, outputs are analyzed for recurring patterns:
-- **Developer mistakes** that could be caught earlier (feed spec templates and matrix rows).
-- **Reviewer misses** where the panel should have caught a defect (feed regression checks).
-- **Unsupported findings** that were raised but later shown incorrect (prevent future false positives).
+- **Developer mistakes** that could be caught earlier.
+- **Reviewer misses** where the panel should have caught a defect.
+- **Unsupported findings** that were raised but later shown incorrect.
 
-Each candidate lesson is recorded in `templates/lessons-log.md` with source, evidence, class, disposition, and approval provenance. Only Mike-approved lessons feed spec prompts, reference patterns, and regression checks. No agent self-approves policy.
+Each lesson is recorded in `templates/lessons-log.md` with source, evidence, class, and type.
+
+**Clarifications apply without approval.** Lessons that clarify or test existing approved requirements can be logged and applied to matrix rows, known pitfalls, and regression checks without Mike approving each one.
+
+**New policy requires Mike's approval.** Lessons that propose new policy or standards changes need Mike's explicit approval and are never adopted automatically. No agent self-approves policy.
 
 ## 4. Gates
 
