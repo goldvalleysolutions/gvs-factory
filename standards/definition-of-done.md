@@ -1,6 +1,6 @@
 # Definition of done
 
-A change is done when every item below is true. The PM agent checks items 1 to 10 before writing the ready-to-merge note. The human checks item 11.
+A change is done when every item below is true. The PM agent checks items 1 to 11 before writing the ready-to-merge note. The human checks item 12.
 
 1. **Criteria met with evidence.** Every acceptance criterion in the spec passes, with reviewer or Local verification evidence. The builder's own report does not count as evidence.
 2. **Local verification on the exact head.** The pull request has a Local verification block with no FAIL, run on the commit being merged (see `standards/ci-minutes.md`). No stacked pull requests.
