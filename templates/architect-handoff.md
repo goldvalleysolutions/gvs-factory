@@ -59,4 +59,4 @@ _If no validated lessons apply, write "None applicable."_
 
 ## 6. Not a review panel
 
-This handoff is preparation, not approval. The architect does not approve the build. The four-lens review panel (Security, Code, Tests and evals, UX/Consistency) runs independently after the build, on the exact head, with no access to this document or the builder's narrative.
+This handoff is preparation, not approval. The architect does not approve the build. The four-lens review panel (Security, Code, Tests and evals, UX/Consistency) runs independently after the build, on the exact head. Lenses do not receive this handoff document or the builder's narrative. Lenses do receive the executed matrix results (commands, expected outputs, and actual outputs) as evidence.

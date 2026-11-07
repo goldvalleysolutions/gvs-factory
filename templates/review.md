@@ -75,10 +75,10 @@ _List every command this lens executed. This section must not be empty._
 ### Findings
 ### Notes
 
-## Lens 4 · UX
+## Lens 4 · UX/Consistency
 VERDICT: PASS | CHANGES
 
-_Look at, with the app running: the flow does what the spec promises with no dead ends; loading, empty, error and expired states say something useful; copy is short, plain and consistent; real buttons and links, labels, keyboard use; works at phone width (390 px). If the PR has no user-facing change, write PASS and say so._
+_Look at, with the app running: frontend patterns, flow, style, brand, accessibility and usability; the flow does what the spec promises with no dead ends; loading, empty, error and expired states say something useful; copy is short, plain and consistent; real buttons and links, labels, keyboard use; works at phone width (390 px). If the PR has no user-facing change, write PASS and say so._
 
 ### Findings
 ### Notes
