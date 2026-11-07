@@ -33,28 +33,45 @@ Bot repos include `theme.yaml` with minimal overrides. Default theme from core: 
 
 **Reference:** `gvs-inbox-triage-bot/bot/theme.yaml`, `gvs-manuals-expert-bot/bot/theme.yaml`
 
-### BOT-08 Bot tabs and API page [CONFLICT: sources disagree, Developer to verify]
+### BOT-08 Bot tabs and API page [PROPOSED: observed conflict, S4a is stale]
 
-**Issue:** Historical snapshots disagree on bot tab styling and API page presence.
+**Issue:** Historical documentation snapshots disagreed on bot tab styling and API page presence.
 
-**Evidence:**
-- S4a (Oct 29 historical guide): wrapped bordered tabs with API page
-- S4b (later bot guide, Oct 30): connected tabs, no API page, "Updated 2026-10-30 (Mike)"
-- S4b checklist line 462 contradicts the "no API" statement
+**Evidence from documentation:**
+- S4a (`/workspace/orgs/dev-team/standards/gvs-ui-style-guide.md`, Oct 29): wrapped bordered tabs with API page — **STALE**
+- S4b (`/workspace/orgs/gold-valley/work/dev/inbox-triage-0.2/core-pr42-rework/docs/gvs-ui-style-guide.md`, Oct 30): connected tabs, no API page, lines 381-407 state "Updated 2026-10-30 (Mike)"
+- S4b checklist line 462 contradicts the "no API" statement (internal inconsistency)
 
-**Resolution:** This is a Developer verification task. Current bot source repo/ref must be checked to determine actual implementation. If sources truly conflict after verification, escalate to Mike. This is not a Marketing architecture decision.
+**Resolution from accessible bot repos:**
 
-**Status:** Awaiting Developer verification of current `goldvalleysolutions/core-bot` implementation.
+Attempted verification of `goldvalleysolutions/gvs-core-bot` at ref `test` on Nov 7, 2026 — repo not accessible to current auth. Child bots (`gvs-inbox-triage-bot`, `gvs-manuals-expert-bot`) were verified.
+
+From `gvs-manuals-expert-bot/bot/README.md`:
+- Admin section lists "Bot admin (you)" and "GVS operator" columns with capabilities
+- No API page mentioned in routes
+- Routes verified: `/`, `/setup`, `/health`, `/admin`, `/r/manuals-expert/`, `/r/manuals-expert/search`, `/mcp/`
+
+From `gvs-inbox-triage-bot/bot/README.md`:
+- Admin section same structure
+- No separate API page — MCP endpoint is `/mcp/` when enabled
+- Routes verified: `/`, `/setup`, `/health`, `/admin`, `/r/inbox-triage/brief`, `/mcp/`
+
+**Conclusion:** S4b (Oct 30) appears to be the current state based on accessible child bots. S4a (Oct 29) is stale. The API page has been replaced by the MCP endpoint at `/mcp/`. Tab styling could not be directly verified without core-bot source access.
+
+**Rule as observed:** Bot admin UI uses connected tabs (per S4b). There is no separate API page; MCP functionality is exposed at `/mcp/` when the bot admin enables it.
+
+**Status:** [PROPOSED: needs Mike] — S4a is stale, S4b is current direction. Full verification requires core-bot source access.
 
 ## Reference paths
 
-Based on accessible bot repositories:
+Verified from accessible bot repositories on Nov 7, 2026:
 
-| Repo | Ref | Pattern files |
-|------|-----|---------------|
-| `goldvalleysolutions/gvs-inbox-triage-bot` | `main` | `bot/Dockerfile`, `bot/bot.yaml`, `bot/theme.yaml`, `bot/role.md` |
-| `goldvalleysolutions/gvs-manuals-expert-bot` | `main` | `bot/Dockerfile`, `bot/bot.yaml`, `bot/theme.yaml`, `bot/role.md` |
-| `goldvalleysolutions/core-bot` (Docker Hub) | `0.3` | Base image; source repo not publicly accessible |
+| Repo | Ref | Pattern files | Status |
+|------|-----|---------------|--------|
+| `goldvalleysolutions/gvs-inbox-triage-bot` | `main` | `bot/Dockerfile`, `bot/bot.yaml`, `bot/theme.yaml`, `bot/role.md`, `bot/tools/`, `bot/skills/`, `bot/services/brief.py` | Verified |
+| `goldvalleysolutions/gvs-manuals-expert-bot` | `main` | `bot/Dockerfile`, `bot/bot.yaml`, `bot/theme.yaml`, `bot/role.md`, `bot/tools/search.py`, `bot/services/search.py` | Verified |
+| `goldvalleysolutions/gvs-core-bot` | `test` | Source repo — attempted Nov 7 | Access pending |
+| `goldvalleysolutions/core-bot` (Docker Hub) | `0.3` | Base image pinned by child bots | Image exists |
 
 ## Known gaps
 
@@ -62,7 +79,7 @@ Based on accessible bot repositories:
 Resident Front Desk is an 8-container compose stack that does not yet meet these rules. It must be rebuilt to comply. This is tracked debt, not an exception. Front Desk implementation is held from this review scope.
 
 ### BOT-GAP-02 Core source access
-The `goldvalleysolutions/core-bot` source repository is not publicly accessible. UI patterns are inferred from bot repos that inherit from it and from historical documentation (S4a, S4b). Direct core source verification requires internal access.
+The `goldvalleysolutions/gvs-core-bot` source repository at ref `test` was not accessible to the verification run on Nov 7, 2026. UI patterns are inferred from child bot repos (`gvs-inbox-triage-bot`, `gvs-manuals-expert-bot`) that inherit from it via `FROM goldvalleysolutions/core-bot:0.3`, and from historical documentation (S4a stale, S4b current). Direct core source verification requires repo access.
 
 ## Verification
 
