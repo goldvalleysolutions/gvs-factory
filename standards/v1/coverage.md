@@ -11,7 +11,7 @@ This document lists the active GVS frontends to check for consistency review. Pr
 - `goldvalleysolutions/gvs-core-bot` — **Verified** via separate read-only run at `test` ref commit `e4b0f3a`
 - `goldvalleysolutions/gvs-inbox-triage-bot` — Verified via GitHub API at `main`
 - `goldvalleysolutions/gvs-manuals-expert-bot` — Verified via GitHub API at `main`
-- `goldvalleysolutions/www.goldvalleysolutions.com` — Access pending (not accessible to current auth)
+- `goldvalleysolutions/www.goldvalleysolutions.com` — **Verified** via separate read-only run at `test` ref commit `05346b0`
 
 ---
 
@@ -163,41 +163,104 @@ This document lists the active GVS frontends to check for consistency review. Pr
 
 ---
 
-## Website (access pending)
+## Website (verified)
 
 | Field | Value | Source |
 |-------|-------|--------|
-| **Repo** | `goldvalleysolutions/www.goldvalleysolutions.com` | Marketing sources S5 |
-| **Ref** | `test` | Marketing sources S5 |
+| **Repo** | `goldvalleysolutions/www.goldvalleysolutions.com` | Verified via read-only run |
+| **Ref** | `test` commit `05346b0` | Verified Nov 7, 2026 |
 | **Profile** | `profile-web`, `brand`, `blog` | — |
 | **Style owner** | Marketing | — |
 | **Architecture owner** | Dev | — |
-| **Status** | Access pending — repo not accessible to current auth | Attempted Nov 7, 2026 |
+| **Status** | Verified Nov 7, 2026 | — |
 
-**Routes (from Marketing sources, unverified):**
+**Config and data (verified from `www@05346b0`):**
 
-| Route family | Profile | Reference | Source |
-|--------------|---------|-----------|--------|
-| `/` (homepage) | WEB-MARKETING | Homepage-only | S5 |
-| `/services/*` | WEB-MARKETING | `base.njk` shell | S5 |
-| `/portfolio/*` | WEB-MARKETING | `base.njk` shell | S5 |
-| `/about` | WEB-MARKETING | `base.njk` shell | S5 |
-| `/training` | WEB-MARKETING | Header/footer Let's Talk only | S7 |
-| `/contact` | WEB-MARKETING | `base.njk` shell | S5 |
-| `/thoughts/*` | WEB-BLOG-* | blog-classic/engineering | S3/S6 |
+| Component | Path |
+|-----------|------|
+| Eleventy config | `frontend/.eleventy.js` |
+| Data files | `frontend/src/_data/` |
+| Bots data | `frontend/src/_data/bots.json` (2 released, 3 coming soon) |
+| Service pages data | `frontend/src/_data/servicePages.json` |
 
-**Reference paths (from Marketing sources, unverified):**
+**Layouts (verified from `frontend/src/_includes/`):**
 
-| Component | Path | Source |
-|-----------|------|--------|
-| Base shell | `frontend/src/_includes/base.njk` | S5 |
-| Blog CTA | `frontend/src/_includes/blog/cta.njk` | S9 |
-| Blog diagram | `frontend/src/_includes/blog/diagram.njk` | S9 |
-| Blog classic | `frontend/src/_includes/blog-classic.njk` | S6 |
-| Blog engineering | `frontend/src/_includes/blog-engineering.njk` | S6 |
-| Theme | `frontend/tailwind.config.js` | S5 |
-| Styles | `frontend/src/css/input.css` | S6 |
-| AGENTS.md | `AGENTS.md` | S5 |
+| Layout | Purpose |
+|--------|---------|
+| `base.njk` | Base shell — nav at lines 92-133, footer at lines 137-180 |
+| `article.njk` | Legacy blog layout (default for older posts) |
+| `blog-classic.njk` | Classic blog family (Foundations, Putting It to Work) |
+| `blog-engineering.njk` | Engineering blog family (Behind the Build) |
+| `service-page.njk` | Service pages (fractional-cto, ai-agents, integrations) |
+| `training-page.njk` | Training page |
+| `redirect.njk` | Redirect pages |
+
+**Top-level pages (verified):**
+
+| Page | Template/Route |
+|------|----------------|
+| Homepage | `index` |
+| About | `about` |
+| Portfolio | `portfolio` |
+| Thoughts (blog index) | `thoughts` |
+| FAQ | `faq` |
+| 404 | `404` |
+| Sitemap | `sitemap` |
+| Pricing | `pricing.njk` — redirects to `/` |
+
+**Services (verified from `services/service.njk` + `_data/servicePages.json`):**
+
+| Service | Layout |
+|---------|--------|
+| `/services/fractional-cto` | `service-page.njk` |
+| `/services/ai-agents` | `service-page.njk` |
+| `/services/integrations` | `service-page.njk` |
+| `/services/training` | `training-page.njk` |
+
+**Bots pages (verified):**
+
+| Page | Template |
+|------|----------|
+| Portfolio bots listing | `portfolio.njk` |
+| Individual bot pages | `portfolio-bot.njk` |
+
+**Projects (verified):**
+
+| Page | Template |
+|------|----------|
+| Projects listing | `projects.njk` |
+| Individual project pages | `portfolio-project.njk` |
+
+**Blog posts (verified from `frontend/src/thoughts/`):**
+
+| Template | Posts |
+|----------|-------|
+| `blog-classic.njk` | `gold-valley-bots`, `how-i-use-agents-to-run-my-consultancy` |
+| `blog-engineering.njk` | `software-factory` |
+| `article.njk` (legacy) | `ga4-mcp-server`, `fractional-cto-first-30-days`, `what-breaks-in-production`, `agent-vs-api-call` |
+
+**Blog previews:** `frontend/src/blog/preview/`
+
+**Partials (verified from `frontend/src/_includes/`):**
+
+| Partial | Purpose |
+|---------|---------|
+| `contact-form` | Contact form |
+| `contact-panel` | Contact panel |
+| `contact-modal` | Contact modal |
+| `cta-band` | CTA band (legacy) |
+| `page-hero` | Page hero |
+| `blog/cta` | Blog CTA |
+| `blog/diagram` | Blog diagram |
+
+**Tokens (verified from `frontend/tailwind.config.js` lines 6-20):**
+
+| Token | Value | Line |
+|-------|-------|------|
+| `brand` (gold) | `#EDAA4B` | line 8 |
+| `brand.dark` | `#9A6700` | — |
+
+**CSS:** `frontend/src/css/input.css`
 
 ---
 
@@ -237,7 +300,13 @@ A rule authored by Marketing does not override Dev's architecture decisions. A r
 
 ## Inventory gaps
 
-1. **Website source access:** `goldvalleysolutions/www.goldvalleysolutions.com` not accessible — routes from Marketing sources unverified
-2. **Website SHA pin:** Ref is mutable `test`. Pin SHA before enforcement.
-3. **Role/state screenshots:** Reference screenshots per page family and role/state not captured
-4. **Release records:** Bot release status needs explicit source evidence
+1. **Role/state screenshots:** Reference screenshots per page family and role/state not captured
+2. **Release records:** Bot release status needs explicit source evidence
+
+## Verification complete
+
+All active frontends verified Nov 7, 2026:
+- `gvs-core-bot@e4b0f3a` — routes, tabs, UI paths
+- `gvs-inbox-triage-bot@main` — routes, reference paths
+- `gvs-manuals-expert-bot@main` — routes, reference paths
+- `www@05346b0` — layouts, pages, blog posts, tokens

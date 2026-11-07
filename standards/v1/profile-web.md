@@ -18,10 +18,10 @@ Reviews use five independent lenses: Security, Code, Tests, UX, and Consistency.
 
 These rules are derived from observed patterns but lack direct Mike approval. Violations go under Notes, not Findings. They require Mike's decision before enforcement.
 
-### WEB-03 Base template shell [PROPOSED: observed from S5, needs Mike]
+### WEB-03 Base template shell [PROPOSED: observed from www@05346b0, needs Mike]
 Web pages extend a common base template (`base.njk`) that provides the HTML shell, head elements, and shared layout structure. Pages should not duplicate this structure.
 
-**Reference:** `www.goldvalleysolutions.com/frontend/src/_includes/base.njk` at `test` ref
+**Reference:** `www@05346b0` `frontend/src/_includes/base.njk` (nav lines 92-133, footer lines 137-180)
 
 ### WEB-04 Reference files in STANDARDS.md [PROPOSED: needs Mike]
 The repo's STANDARDS.md declares which files are the reference implementations for components, layouts, and patterns. New code follows those references.
@@ -29,10 +29,10 @@ The repo's STANDARDS.md declares which files are the reference implementations f
 ### WEB-05 Component location [PROPOSED: observed from S5, needs Mike]
 Reusable components live in `_includes/` for Eleventy. One-off markup should be extracted if used more than once.
 
-### WEB-06 Tailwind for styling [PROPOSED: observed from S5/S6, needs Mike]
+### WEB-06 Tailwind for styling [PROPOSED: observed from www@05346b0, needs Mike]
 Styling uses Tailwind CSS utility classes. Custom CSS is limited to design tokens, base layer resets, and cases where utilities cannot express the style.
 
-**Reference:** `www.goldvalleysolutions.com/frontend/tailwind.config.js`, `frontend/src/css/input.css`
+**Reference:** `www@05346b0` `frontend/tailwind.config.js` (tokens lines 6-20), `frontend/src/css/input.css`
 
 ### WEB-07 Design tokens in config [PROPOSED: observed from S5, needs Mike]
 Colors, spacing scales, and typography settings are defined in the Tailwind config, not scattered across templates. Token names describe purpose, not appearance (e.g., `brand-gold`, not `yellow-500`).
@@ -63,7 +63,7 @@ The website has distinct page families. Do not use homepage as reference for eve
 
 ## Documentation debt
 
-S4a historical UI guide contains stale references (768px nav, old footer patterns). S5 current implementation supersedes S4a. The guide needs updating.
+S4a historical UI guide contains stale references (768px nav, old footer patterns). Current implementation verified from `www@05346b0` supersedes S4a. The guide needs updating.
 
 ## Notes
 
