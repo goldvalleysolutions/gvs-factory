@@ -184,16 +184,25 @@ guard_citation_resolver() {
   while IFS= read -r match; do
     local file path
     file=$(echo "$match" | cut -d: -f1)
-    path=$(echo "$match" | sed -n 's/.*\[APPROVED: *\([^,\]]*\).*/\1/p' | xargs 2>/dev/null || true)
+    # Extract path: everything after "APPROVED: " up to comma or closing bracket
+    path=$(echo "$match" | sed -n 's/.*\[APPROVED: *\([^],]*\).*/\1/p' | xargs 2>/dev/null || true)
     # Skip non-path sources
     if [[ -z "$path" ]] || [[ "$path" == *"Mike"* ]] || [[ "$path" == *"direct"* ]] || [[ "$path" == *"references"* ]]; then
       continue
     fi
-    # Check if path looks like a file path
-    if [[ "$path" == *"/"* ]] || [[ "$path" == *".md"* ]]; then
-      if [ ! -f "$path" ]; then
-        fail "citation-resolver: '$path' cited in '$file' does not exist"
-        found=1
+    # Skip section references (e.g., "docs/process.md section 7")
+    # These are not file paths but documentation references with section descriptions
+    if [[ "$path" == *" section"* ]] || [[ "$path" == *" item"* ]] || [[ "$path" == *" bullet"* ]] || [[ "$path" == *" principle"* ]]; then
+      continue
+    fi
+    # Check if path looks like a pure file path (contains / or ends in .md, but no spaces after the extension)
+    if [[ "$path" == *"/"* ]] || [[ "$path" == *".md" ]]; then
+      # Only check if it looks like a pure path (no description text after .md)
+      if [[ ! "$path" =~ \.md\ .+ ]]; then
+        if [ ! -f "$path" ]; then
+          fail "citation-resolver: '$path' cited in '$file' does not exist"
+          found=1
+        fi
       fi
     fi
   done < <(grep -rn '\[APPROVED:' standards/v1/ 2>/dev/null)

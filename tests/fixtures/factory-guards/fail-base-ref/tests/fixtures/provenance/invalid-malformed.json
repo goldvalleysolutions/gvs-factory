@@ -1,0 +1,4 @@
+{
+  "pr": 42,
+  "round": 1,
+  "this is not valid JSON because it has a trailing comma and missing closing brace",

@@ -56,13 +56,31 @@ log_name() {
   printf '%s-%s' "$slug" "$hash"
 }
 
+# Required checks that cannot be skipped via VERIFY_SKIP or --allow-missing
+# These checks must run and FAIL the verification if the tool is absent
+REQUIRED_CHECKS="factory gitleaks semgrep"
+
+is_required_check() {
+  local label=$1
+  local first_word="${label%% *}"
+  for req in $REQUIRED_CHECKS; do
+    if [ "$first_word" = "$req" ] || [ "$label" = "$req" ]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 # run <dir> <label> <command...>
 run() {
   local dir=$1 label=$2; shift 2
   local start end rc logf k
-  for k in "${SKIPS[@]}"; do
-    if [ "$k" = "${label%% *}" ] || [ "$k" = "$label" ]; then skip "$dir" "$label" "$SKIP_REASON"; return 0; fi
-  done
+  # Never skip required checks
+  if ! is_required_check "$label"; then
+    for k in "${SKIPS[@]}"; do
+      if [ "$k" = "${label%% *}" ] || [ "$k" = "$label" ]; then skip "$dir" "$label" "$SKIP_REASON"; return 0; fi
+    done
+  fi
   logf="$LOG_DIR/$(log_name "$dir-$label").log"
   start=$(date +%s)
   ( cd "$dir" && "$@" ) >"$logf" 2>&1
@@ -81,12 +99,13 @@ skip() { local shown=$2; [ "$1" != "." ] && shown="$1: $2"; add_row "$shown" "SK
 # na <label> <reason>: Not applicable - documented exclusion, not a skip or failure
 na() { add_row "$1" "N/A ($2)" "0s"; }
 # missing <tool> [reason]
+# Required checks (gitleaks, semgrep) always FAIL if missing, regardless of --allow-missing
 missing() {
   local why=${2:-not installed}
-  if [ $ALLOW_MISSING -eq 1 ]; then
-    add_row "$1" "SKIP (MISSING: $1 $why, allowed)" "0s"
-  else
+  if is_required_check "$1" || [ $ALLOW_MISSING -ne 1 ]; then
     add_row "$1" "FAIL (MISSING: $1 $why)" "0s"; FAILED=1
+  else
+    add_row "$1" "SKIP (MISSING: $1 $why, allowed)" "0s"
   fi
 }
 DOCKER_OK=
