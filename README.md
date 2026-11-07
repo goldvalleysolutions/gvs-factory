@@ -5,13 +5,14 @@ This repo defines a software factory: a process for turning ideas into working s
 ## How it works
 
 1. **Request and brief.** A PM agent ranks the request and writes a one-page brief. The human approves it.
-2. **Spec.** The PM agent writes a spec. Every acceptance criterion has a Verify line that says how to check it.
-3. **Build.** A developer agent builds on a branch, opens a pull request into `test`, and writes a build report.
-4. **Review.** An independent review covers four lenses: Security, Code, Tests and evals, and UX/Consistency. Each lens says PASS or CHANGES. Any CHANGES sends the work back, up to three rounds in total.
-5. **Merge to test.** When all four lenses pass and the pull request has a Local verification block on the same head commit, an agent merges to `test`. CI only builds, publishes and deploys.
-6. **Human check.** The human gets a short ready-to-merge note, tries the change, and is the only one who merges `test` into `main`.
+2. **Spec.** The PM agent writes a spec. Every acceptance criterion has a Verify line and a negative case.
+3. **Architect handoff.** The Chief architect pins standards, selects patterns, and writes the test matrix before build.
+4. **Build.** A Developer agent builds on a branch, opens a pull request into `test`, and writes a build report (claims only).
+5. **Review.** The Reviewer executes the test matrix, then runs the four lenses: Security, Code, Tests and evals, and UX/Consistency. Each lens says PASS or CHANGES. Any CHANGES sends the work back, up to three rounds in total.
+6. **Merge to test.** When all four lenses pass and the pull request has a Local verification block on the same head commit, an agent merges to `test`. CI only builds, publishes, and deploys.
+7. **Human check.** The human gets a short ready-to-merge note, tries the change, and is the only one who merges `test` into `main`.
 
-Money, auth and permissions, deploys, database changes, messages to real people, new dependencies, public exposure and business decisions are always flagged for the human.
+Money, auth and permissions, deploys, database changes, messages to real people, new dependencies, public exposure, and business decisions are always flagged for the human.
 
 The full process is in `docs/process.md`.
 
@@ -22,15 +23,18 @@ LICENSE
 NOTICE
 README.md
 docs/
-  process.md              the process: roles, flow, gates, review lenses, rework and merge rules
+  process.md              the process: roles, flow, gates, review lenses, rework, and merge rules
 standards/
   ci-minutes.md           local verification and the little CI that remains
   definition-of-done.md   when a change counts as done
 templates/
   spec.md                 build spec with acceptance criteria and Verify lines
-  build-report.md         the builder's report, first line is the status
+  architect-handoff.md    Chief architect handoff: pinned standards, patterns, test matrix link
+  test-matrix.md          acceptance-to-test matrix with positive, negative, and environment cases
+  build-report.md         the builder's report, first line is the status (claims only)
   review.md               four-lens review, one verdict per lens
   ready-to-merge.md       the short note the human reads before merging
+  lessons-log.md          learning loop: lessons with source, evidence, disposition, approval
 scripts/
   verify-local.sh         runs all checks locally and prints the Local verification block
 ```
