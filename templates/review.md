@@ -4,15 +4,42 @@ _Run by a reviewer that did not write the code. Save as `review-round-<N>.md` wi
 
 **Reviewed:** head `<sha>` against the acceptance checklist in spec `<path>`. The build report is a list of claims; the evidence run below checks them.
 **Reviewer:** <name or agent> · **Date and time:** <...>
+**Standards version:** <version from repo's STANDARDS.md>
+
+## Reviewer inputs (sanitized bundle)
+
+Every lens receives exactly the same bundle, with no builder commentary or prior-round findings:
+
+1. **Diff** — the patch file between base and head SHAs.
+2. **Acceptance criteria** — the spec's checklist with the evidence run results attached (pass/fail per item).
+3. **Standards** — the pinned standards version and all applicable profiles from the repo's STANDARDS.md, plus any declared reference files.
+4. **Evidence pack** — raw `verify-local.sh` output and screenshots from the evidence run at the head SHA. No builder report, no developer commentary, no previous reviewer findings or conclusions.
+5. **Lens instructions** — only the instructions for that lens (below).
+
+In rounds 2 and 3, reviewers get a fresh bundle for the new head. Prior findings are used only by the orchestrator after verdicts are in, to check closure. No reviewer sees them.
+
+### Isolation
+
+**Enforced:** Each lens is a NEW cloud-agent launch, never a reply to the builder or a continued session, so it inherits no conversation context. Its input is the bundle above.
+
+**Procedural only:** A cloud agent launches with repository access. It could technically run `git log`, read commit messages, or open the PR, and it could see branch names.
+
+**Mitigations:**
+- Reviewers start on a neutral review ref: a detached HEAD at the SHA, so the PR is not named in the prompt.
+- The instruction not to read history or the PR is repeated in every lens prompt.
+- Each report must state the files and commands it used; any reference to commit messages or the PR body voids that lens.
+
+**Residual risk:** True sandboxing (no repo access, only the bundle) is not available. The design records this rather than claiming it.
 
 ## Ground rules
-1. **Run it once, before the lenses.** Outside the lens runs, the Reviewer checks out the branch, runs the check commands from `AGENTS.md` (or `scripts/verify-local.sh`), runs the tests including the Playwright e2e suite under `tests/e2e/` (desktop and mobile projects, stub LLM; record passes per project and the head SHA), and starts the app for anything a user or another system can see. Record pass/fail evidence for each item on the spec's acceptance checklist, reproducing at least one yourself. If you could not run something, say so and why. Then run each lens fresh and stateless with only the diff, the checklist with this evidence, and its own lens section below. A lens never sees another lens's output; combine the verdicts only after all four return.
+1. **Run it once, before the lenses.** Outside the lens runs, the Reviewer checks out the branch, runs the check commands from `AGENTS.md` (or `scripts/verify-local.sh`), runs the tests including the Playwright e2e suite under `tests/e2e/` (desktop and mobile projects, stub LLM; record passes per project and the head SHA), and starts the app for anything a user or another system can see. Record pass/fail evidence for each item on the spec's acceptance checklist, reproducing at least one yourself. If you could not run something, say so and why. Then run each lens fresh and stateless with only the sanitized bundle. A lens never sees another lens's output; combine the verdicts only after all five return.
 2. **Each lens gets its own verdict line**, exactly `VERDICT: PASS` or `VERDICT: CHANGES`.
-3. **CHANGES only for real problems:** a bug, a spec gap, a failing check, a security issue, or a clear convention break. A failing check is always CHANGES.
+3. **CHANGES only for real problems:** a bug, a spec gap, a failing check, a security issue, a standards violation with a rule ID, or a clear convention break. A failing check is always CHANGES.
 4. **Do not block on taste.** Style preferences, naming and "nice to have" ideas go under Notes, never Findings.
 5. **Do not block on pre-existing issues** the PR did not make worse; mention them under Notes.
 6. From round 2, the evidence run re-checks every finding from the previous round and records fixed or not fixed on the checklist; each lens judges it from there.
-7. Findings give `path:line`, the problem, its impact and the fix you want. Write "None." when there are none.
+7. Findings give `path:line`, the problem (with rule ID if a standards violation), its impact and the fix you want. Write "None." when there are none.
+8. **Do not read git history, commit messages, or the PR description.** Judge only what is in the bundle. Any reference to history voids this lens.
 
 ## Commands run
 | Command | Result |
@@ -52,7 +79,15 @@ _Look at, with the app running: the flow does what the spec promises with no dea
 ### Findings
 ### Notes
 
+## Lens 5 · Consistency
+VERDICT: PASS | CHANGES
+
+_This lens is BLOCKING. Look at: the change follows the pinned standards version and all applicable profiles declared in the repo's STANDARDS.md; any new pattern matches or extends the declared reference files; a violation of an [APPROVED] rule is CHANGES with the rule ID cited; a violation of a [PROPOSED] rule goes under Notes, not Findings; any new deviation has an entry in DEVIATIONS.md with Mike's approval reference before merge; existing baselined deviations are not made worse; no new drift is introduced without approval._
+
+### Findings
+### Notes
+
 ## Round result
-- **All four PASS and a Local verification block with no FAIL on the same head** → an agent merges to `test`; the PM agent writes the ready-to-merge note.
+- **All five PASS and a Local verification block with no FAIL on the same head** → an agent merges to `test`; the PM agent writes the ready-to-merge note.
 - **Any CHANGES and rounds left** (max 3 rounds: round 1 plus 2 rework rounds) → the developer agent resumes the builder with this file.
 - **Any CHANGES after round 3** → stop; the PM agent writes the ready-to-merge note marked **NOT READY** with the open findings, for the human to decide.

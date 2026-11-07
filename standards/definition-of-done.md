@@ -1,16 +1,17 @@
 # Definition of done
 
-A change is done when every item below is true. The PM agent checks items 1 to 8 before writing the ready-to-merge note. The human checks item 9.
+A change is done when every item below is true. The PM agent checks items 1 to 9 before writing the ready-to-merge note. The human checks item 10.
 
 1. **Criteria met with evidence.** Every acceptance criterion in the spec passes, with reviewer or Local verification evidence. The builder's own report does not count as evidence.
 2. **Local verification on the exact head.** The pull request has a Local verification block with no FAIL, run on the commit being merged (see `standards/ci-minutes.md`). No stacked pull requests.
-3. **Four lenses pass.** Security, code, tests and evals, and UX each have `VERDICT: PASS` on that same commit, within 3 review rounds.
+3. **Five lenses pass.** Security, Code, Tests and evals, UX, and Consistency each have `VERDICT: PASS` on that same commit, within 3 review rounds.
 4. **Scope held.** No files changed outside the spec's areas. Out-of-scope items are untouched.
 5. **No secrets or real personal data.** No keys, tokens or `.env` files committed. Examples use fictional data.
 6. **Docs updated.** README, `AGENTS.md` and example config reflect any changed behaviour.
 7. **Flags named.** Every always-flagged item the change touches is listed in the ready-to-merge note, and any product decisions are defaults in config, not hard-coded.
 8. **Playwright e2e suite passes.** The repo's `tests/e2e/` Playwright suite (desktop and mobile, stub LLM) PASSes in `scripts/verify-local.sh` on the head, the Local verification block shows passes per project and the head SHA, and any new user-facing behaviour has new or updated e2e tests in this pull request. See the rule below.
-9. **Human approval.** The human has tried the change on `test` and merged it to `main`.
+9. **Standards compliance.** The change follows the pinned standards version and all applicable profiles from the repo's STANDARDS.md. Any deviations have entries in DEVIATIONS.md with owner, target, and approval reference.
+10. **Human approval.** The human has tried the change on `test` and merged it to `main`.
 
 ## Playwright end-to-end rule (Mike, 2026-10-30)
 
@@ -24,3 +25,14 @@ Standing rule for core and every bot repo:
 6. The pull request's Local verification block lists the suite result (passes per project) and the head SHA.
 7. The Reviewer's evidence run includes the suite.
 8. Any new user-facing behaviour adds or updates its e2e tests in the same pull request.
+
+## Consistency lens rule (Mike, 2026-11-07)
+
+Standing rule for all repos with a STANDARDS.md:
+
+1. The Consistency lens (Lens 5) is BLOCKING from day one.
+2. The lens checks the change against the pinned standards version and all applicable profiles.
+3. Violations of [APPROVED] rules are CHANGES with the rule ID cited.
+4. Violations of [PROPOSED] rules go under Notes, not Findings.
+5. Any new deviation needs an entry in DEVIATIONS.md with owner, target, and Mike's approval reference before merge.
+6. Existing baselined deviations prevent new drift but are not permanent waivers.

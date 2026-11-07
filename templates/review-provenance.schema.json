@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/goldvalleysolutions/gvs-factory/templates/review-provenance.schema.json",
+  "title": "Review Provenance",
+  "description": "Provenance record for a review round. Saved as review/<PR>-round<N>.json.",
+  "type": "object",
+  "required": ["pr", "round", "head_sha", "standards_version", "lenses", "timestamp"],
+  "properties": {
+    "pr": {
+      "type": "integer",
+      "description": "Pull request number"
+    },
+    "round": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3,
+      "description": "Review round (1, 2, or 3; max 3 rounds)"
+    },
+    "head_sha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$",
+      "description": "Full SHA of the head commit reviewed"
+    },
+    "base_sha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$",
+      "description": "Full SHA of the base commit for the diff"
+    },
+    "standards_version": {
+      "type": "string",
+      "description": "Version of the pinned standards (e.g., '1.0.0')"
+    },
+    "profiles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of applicable profiles from STANDARDS.md"
+    },
+    "lenses": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "$ref": "#/$defs/lens_record"
+      },
+      "description": "One record per lens (Security, Code, Tests, UX, Consistency)"
+    },
+    "evidence_run": {
+      "$ref": "#/$defs/evidence_run",
+      "description": "Evidence run metadata"
+    },
+    "input_bundle_hashes": {
+      "type": "object",
+      "properties": {
+        "diff": {
+          "type": "string",
+          "description": "SHA-256 hash of the diff patch file"
+        },
+        "acceptance_criteria": {
+          "type": "string",
+          "description": "SHA-256 hash of the acceptance criteria with evidence"
+        },
+        "standards": {
+          "type": "string",
+          "description": "SHA-256 hash of the concatenated standards files"
+        },
+        "evidence_pack": {
+          "type": "string",
+          "description": "SHA-256 hash of the evidence pack (verify-local output + screenshots)"
+        }
+      },
+      "description": "Hashes of the sanitized bundle inputs for reproducibility"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when the round completed"
+    },
+    "overall_verdict": {
+      "type": "string",
+      "enum": ["PASS", "CHANGES"],
+      "description": "Overall verdict: PASS if all lenses pass, CHANGES if any lens requires changes"
+    }
+  },
+  "$defs": {
+    "lens_record": {
+      "type": "object",
+      "required": ["lens", "verdict", "agent_id", "requested_model", "reported_model", "timestamp"],
+      "properties": {
+        "lens": {
+          "type": "string",
+          "enum": ["Security", "Code", "Tests", "UX", "Consistency"],
+          "description": "Which lens this record is for"
+        },
+        "verdict": {
+          "type": "string",
+          "enum": ["PASS", "CHANGES"],
+          "description": "The lens verdict"
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "Cloud agent ID that ran this lens"
+        },
+        "agent_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the cloud agent run"
+        },
+        "requested_model": {
+          "type": "string",
+          "description": "Model ID requested for this lens run"
+        },
+        "reported_model": {
+          "type": "string",
+          "description": "Model ID reported by the platform. May be 'not reported' if the platform does not report the actual model used."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when this lens completed"
+        },
+        "findings_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of findings from this lens"
+        },
+        "finding_rule_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Rule IDs cited in findings (if standards violations)"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Any notes about this lens run (e.g., 'same model as builder')"
+        }
+      }
+    },
+    "evidence_run": {
+      "type": "object",
+      "properties": {
+        "agent_id": {
+          "type": "string",
+          "description": "Cloud agent ID that ran the evidence collection"
+        },
+        "verify_local_result": {
+          "type": "string",
+          "enum": ["PASS", "FAIL"],
+          "description": "Overall result of verify-local.sh"
+        },
+        "e2e_desktop_passes": {
+          "type": "integer",
+          "description": "Number of Playwright e2e tests passed on desktop"
+        },
+        "e2e_mobile_passes": {
+          "type": "integer",
+          "description": "Number of Playwright e2e tests passed on mobile"
+        },
+        "screenshots_captured": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of screenshot files captured"
+        }
+      }
+    }
+  }
+}

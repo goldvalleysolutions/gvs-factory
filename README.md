@@ -1,14 +1,14 @@
 # Gold Valley Solutions Software Factory
 
-This repo defines a software factory: a process for turning ideas into working software with a team of AI agents and one human approver. It holds the process, the templates each step uses, and a few generic standards. It contains no project code.
+This repo defines a software factory: a process for turning ideas into working software with a team of AI agents and one human approver. It holds the process, the templates each step uses, the versioned standards, and a few generic policies. It contains no project code.
 
 ## How it works
 
 1. **Request and brief.** A PM agent ranks the request and writes a one-page brief. The human approves it.
 2. **Spec.** The PM agent writes a spec. Every acceptance criterion has a Verify line that says how to check it.
 3. **Build.** A developer agent builds on a branch, opens a pull request into `test`, and writes a build report.
-4. **Review.** An independent review covers four lenses: security, code, tests and evals, and UX. Each lens says PASS or CHANGES. Any CHANGES sends the work back, up to three rounds in total.
-5. **Merge to test.** When all four lenses pass and the pull request has a Local verification block on the same head commit, an agent merges to `test`. CI only builds, publishes and deploys.
+4. **Review.** An independent review covers five lenses: Security, Code, Tests and evals, UX, and Consistency. Each lens says PASS or CHANGES. Any CHANGES sends the work back, up to three rounds in total.
+5. **Merge to test.** When all five lenses pass and the pull request has a Local verification block on the same head commit, an agent merges to `test`. CI only builds, publishes and deploys.
 6. **Human check.** The human gets a short ready-to-merge note, tries the change, and is the only one who merges `test` into `main`.
 
 Money, auth and permissions, deploys, database changes, messages to real people, new dependencies, public exposure and business decisions are always flagged for the human.
@@ -26,11 +26,23 @@ docs/
 standards/
   ci-minutes.md           local verification and the little CI that remains
   definition-of-done.md   when a change counts as done
+  v1/                     versioned standards
+    CHANGELOG.md          changes to standards
+    common.md             rules for all repos
+    profile-bot.md        rules for bot repos
+    profile-web.md        rules for web frontends
+    brand.md              brand rules (DRAFT/NOT ENFORCED)
+    blog.md               blog rules (DRAFT/NOT ENFORCED)
+    coverage.md           frontend inventory
 templates/
   spec.md                 build spec with acceptance criteria and Verify lines
   build-report.md         the builder's report, first line is the status
-  review.md               four-lens review, one verdict per lens
+  review.md               five-lens review, one verdict per lens
   ready-to-merge.md       the short note the human reads before merging
+  standards-pin.md        template for project STANDARDS.md
+  deviations.md           template for project DEVIATIONS.md
+  lens-launch.md          prompt template for launching a review lens
+  review-provenance.schema.json   JSON schema for review provenance records
 scripts/
   verify-local.sh         runs all checks locally and prints the Local verification block
 ```
@@ -48,6 +60,17 @@ VERIFY_E2E_CMD="npx playwright test" bash scripts/verify-local.sh               
 ```
 
 It detects npm and Python projects, Dockerfiles (`docker build` + `trivy image`) and compose files, always runs gitleaks and Semgrep (`p/ci`, or `SEMGREP_CONFIG`), and prints a Markdown block to paste into the pull request. It exits non-zero if any check fails or the tree is dirty.
+
+## Versioned standards
+
+Project repos pin a standards version in their `STANDARDS.md` and declare applicable profiles:
+- `common.md` — applies to all repos
+- `profile-bot.md` — bot repositories only
+- `profile-web.md` — web frontend repositories only
+- `brand.md` — repos with user-facing visual interfaces (DRAFT/NOT ENFORCED)
+- `blog.md` — repos with blog content (DRAFT/NOT ENFORCED)
+
+See `standards/v1/` for the current standards and `templates/standards-pin.md` for the project pin template.
 
 ## Credits
 
