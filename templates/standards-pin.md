@@ -12,6 +12,8 @@ This repository follows the Gold Valley Solutions software factory standards.
 **Pinned date:** <YYYY-MM-DD>
 **Source:** https://github.com/goldvalleysolutions/gvs-factory/tree/test/standards/v1
 
+**Immutability:** Once released, the `standards/v1/` folder is immutable. Fixes and changes go in a new version folder (e.g., `standards/v2/`).
+
 ## Applicable profiles
 
 _Check all that apply. Each profile adds its rules to this repo's consistency review._

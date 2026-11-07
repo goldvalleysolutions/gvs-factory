@@ -61,6 +61,8 @@ You do NOT have:
 
 <Insert the lens-specific instructions from templates/review.md>
 
+For Lens 5 (Consistency), see `templates/review.md` section "Lens 5 · Consistency".
+
 ### Output format
 
 ```markdown

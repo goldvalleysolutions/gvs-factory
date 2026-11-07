@@ -52,10 +52,10 @@ A baseline entry prevents new drift but is not a permanent waiver. Each needs an
 
 | Owner | Paths | Rule | Reason | Target | Approval |
 |-------|-------|------|--------|--------|----------|
-| Dev | thoughts/agent-vs-api-call | BL-05 | Legacy article.njk | To be migrated | Baseline only |
-| Dev | thoughts/fractional-cto-first-30-days | BL-05 | Legacy article.njk | To be migrated | Baseline only |
-| Dev | thoughts/ga4-mcp-server | BL-05 | Legacy article.njk | To be migrated | Baseline only |
-| Dev | thoughts/what-breaks-in-production | BL-05 | Legacy article.njk | To be migrated | Baseline only |
+| Dev | thoughts/agent-vs-api-call | BL-05 | Legacy article.njk | To be migrated | Baselined 2026-11-07 |
+| Dev | thoughts/fractional-cto-first-30-days | BL-05 | Legacy article.njk | To be migrated | Baselined 2026-11-07 |
+| Dev | thoughts/ga4-mcp-server | BL-05 | Legacy article.njk | To be migrated | Baselined 2026-11-07 |
+| Dev | thoughts/what-breaks-in-production | BL-05 | Legacy article.njk | To be migrated | Baselined 2026-11-07 |
 
 ## Notes
 
