@@ -13,6 +13,7 @@ _Prompt template for launching a review lens as a new cloud-agent run. Each lens
    - The acceptance criteria with evidence results
    - The standards text (see below)
    - The evidence pack (verify-local output + screenshots)
+   - Each reference file declared in the repo's STANDARDS.md pin, appended with a `--- <path> ---` header.
 
    **How to attach:** Save each bundle file on the orchestrator's machine. Pass them in the CloudAgent launch `files` parameter as `file://` URLs. The agent finds them under `uploads/`. Never paste the diff into the PR or the prompt.
 
@@ -61,7 +62,7 @@ You do NOT have:
 
 ### Lens-specific instructions
 
-<Insert the lens-specific instructions from templates/review.md>
+Paste the italic paragraph under the matching ## Lens N · <name> heading in templates/review.md.
 
 For Lens 5 (Consistency), see `templates/review.md` section "Lens 5 · Consistency".
 
@@ -99,7 +100,7 @@ The standards input is the full text of `common.md` plus each declared profile, 
 <full text of brand.md, if declared>
 ```
 
-Only include profiles declared in the repo's STANDARDS.md.
+Only include profiles declared in the repo's STANDARDS.md. Then append each declared reference file, each preceded by a `--- <path> ---` header line.
 
 ---
 

@@ -101,7 +101,7 @@ In rounds 2 and 3, reviewers get a fresh bundle for the new head. Prior findings
 **Procedural only:** A cloud agent launches with repository access. It could technically run `git log`, read commit messages, or open the PR, and it could see branch names.
 
 **Mitigations:**
-- Reviewers start on a neutral review ref: a detached HEAD at the SHA, so the PR is not named in the prompt.
+- Reviewers start on a neutral review ref: a detached HEAD at the PR's base SHA, so the PR is not named in the prompt.
 - The instruction not to read history or the PR is repeated in every lens prompt.
 - Each report must state the files and commands it used; any reference to commit messages or the PR body voids that lens.
 
