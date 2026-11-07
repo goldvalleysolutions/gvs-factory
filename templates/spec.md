@@ -60,8 +60,8 @@ _Each one is one observable behaviour plus how to check it, runnable by someone 
 
 - **AC-G.3** No secrets, keys, or real personal data are committed; `.env` is not committed.
   **Verify:** `git diff <base>...HEAD --name-only | grep -x .env` returns no output; a secret scan of the diff returns no findings.
-  **Negative:** A committed secret is detected. In an isolated temp git repo: `cd $(mktemp -d) && git init && echo "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" > token.txt && git add token.txt && git commit -m "test" && gitleaks detect --source .` exits non-zero. (The `ghp_` pattern is a documented gitleaks-detectable synthetic example, not a real token.)
-  **Positive (clean):** `cd $(mktemp -d) && git init && echo "no secrets here" > readme.txt && git add readme.txt && git commit -m "test" && gitleaks detect --source .` exits zero.
+  **Negative:** A committed secret is detected. In an isolated temp git repo: `cd $(mktemp -d) && git init -q && echo "AKIAIOSFODNN7TESTING" > aws.txt && git add aws.txt && git commit -q -m "test" && gitleaks detect --source .` exits non-zero (rule: aws-access-token). This is a synthetic fixture with valid AWS key format but is not a real credential.
+  **Positive (clean):** `cd $(mktemp -d) && git init -q && echo "no secrets here" > readme.txt && git add readme.txt && git commit -q -m "test" && gitleaks detect --source .` exits zero.
 
 - **AC-G.4** The default configuration makes zero paid or outbound calls to real providers.
   **Verify:** the named test or check for this repo.
