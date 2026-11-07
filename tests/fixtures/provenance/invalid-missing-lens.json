@@ -4,6 +4,7 @@
   "head_sha": "0123456789abcdef0123456789abcdef01234567",
   "base_sha": "fedcba9876543210fedcba9876543210fedcba98",
   "standards_version": "v1.0.0",
+  "gate_version": "four-v1",
   "profiles": ["common.md", "profile-bot.md"],
   "lenses": [
     {
@@ -29,14 +30,6 @@
       "requested_model": "claude-sonnet-5-5-high",
       "reported_model": "claude-sonnet-5-5-high",
       "timestamp": "2026-11-07T12:02:00Z"
-    },
-    {
-      "lens": "UX",
-      "verdict": "PASS",
-      "agent_id": "agent-ux-001",
-      "requested_model": "claude-sonnet-5-5-high",
-      "reported_model": "claude-sonnet-5-5-high",
-      "timestamp": "2026-11-07T12:03:00Z"
     }
   ],
   "timestamp": "2026-11-07T12:05:00Z",

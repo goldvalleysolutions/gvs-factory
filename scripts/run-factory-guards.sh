@@ -91,34 +91,47 @@ PYCHECK
   return $missing
 }
 
-# Guard: Canonical lens names
-# Canonical list: Security, Code, Tests and evals, UX, Consistency
+# Guard: Canonical lens names (four-v1 gate)
+# Canonical list: Security, Code, Tests and evals, UX/Consistency
+# Rejects: bare "Tests" (without "and evals"), separate "UX" and "Consistency" in new gate context
 guard_canonical_lens_names() {
   local found=0
-  # Search for lens-list contexts with bare "Tests" (without "and evals")
   while IFS= read -r file; do
     while IFS= read -r line; do
-      # Skip lines containing "Tests and evals"
-      if echo "$line" | grep -q "Tests and evals"; then
-        continue
-      fi
-      # Check for lens-list patterns with bare "Tests" (only report once per line)
       local reported=0
-      if echo "$line" | grep -Eq 'Security[[:space:]]*[/,|][[:space:]]*Code[[:space:]]*[/,|][[:space:]]*Tests[[:space:]]*[/,|]'; then
-        fail "canonical-lens-names: bare 'Tests' in lens list (should be 'Tests and evals'): $(basename "$file")"
-        found=1
-        reported=1
-      fi
-      if [ $reported -eq 0 ] && echo "$line" | grep -Eq 'Tests[[:space:]]*[/,|][[:space:]]*(UX|Consistency)'; then
-        if ! echo "$line" | grep -q "Tests and evals"; then
+      
+      # Skip lines containing "Tests and evals" - these are correct
+      if echo "$line" | grep -q "Tests and evals"; then
+        # But still check for separate UX/Consistency issues
+        :
+      else
+        # Check for bare "Tests" in lens-list patterns (only report once per line)
+        if echo "$line" | grep -Eq 'Security[[:space:]]*[/,|·][[:space:]]*Code[[:space:]]*[/,|·][[:space:]]*Tests[[:space:]]*[/,|·]'; then
           fail "canonical-lens-names: bare 'Tests' in lens list (should be 'Tests and evals'): $(basename "$file")"
           found=1
           reported=1
         fi
+        if [ $reported -eq 0 ] && echo "$line" | grep -Eq 'Tests[[:space:]]*[/,|·][[:space:]]*(UX|Consistency)'; then
+          fail "canonical-lens-names: bare 'Tests' in lens list (should be 'Tests and evals'): $(basename "$file")"
+          found=1
+          reported=1
+        fi
+        # Check schema enum for bare "Tests"
+        if echo "$line" | grep -Eq '"Tests"[[:space:]]*[,\]]'; then
+          fail "canonical-lens-names: bare 'Tests' in enum (should be 'Tests and evals'): $(basename "$file")"
+          found=1
+          reported=1
+        fi
       fi
-      # Check schema enum
-      if echo "$line" | grep -Eq '"Tests"[[:space:]]*[,\]]' && ! echo "$line" | grep -q '"Tests and evals"'; then
-        fail "canonical-lens-names: bare 'Tests' in enum (should be 'Tests and evals'): $(basename "$file")"
+      
+      # Check for separate "UX" and "Consistency" as distinct lenses (old five-lens pattern)
+      # But allow "UX/Consistency" as the correct combined form
+      if echo "$line" | grep -q "UX/Consistency"; then
+        continue  # Correct four-lens form
+      fi
+      # Check for separate lens names in lists (e.g., "UX, Consistency" or "UX / Consistency")
+      if echo "$line" | grep -Eq '"UX"[[:space:]]*,[[:space:]]*"Consistency"'; then
+        fail "canonical-lens-names: separate 'UX' and 'Consistency' in enum (should be 'UX/Consistency'): $(basename "$file")"
         found=1
       fi
     done < "$file"

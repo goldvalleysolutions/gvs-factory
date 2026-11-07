@@ -18,7 +18,7 @@ This document defines how a change moves from an idea to the `main` branch. It i
 | Human approver | Person | Sets direction, approves briefs and specs, creates repos, holds secrets and permissions, tests `test` hands-on, decides every flagged item, and is the only one who merges to `main`. |
 | PM agent | AI agent | Triages and ranks requests, writes the brief and the spec with acceptance criteria, spot-checks evidence, and writes the ready-to-merge note. |
 | Developer agent | AI agent | Builds the change (directly or by launching a coding agent), opens the pull request with a build report, and handles rework. |
-| Reviewer | AI agent run, independent of the builder | Runs the branch once for evidence, runs the five lenses in isolation, and combines one verdict per lens. |
+| Reviewer | AI agent run, independent of the builder | Runs the branch once for evidence, runs the four lenses in isolation, and combines one verdict per lens. |
 | CI | Automation | Builds and publishes images, deploys and releases. It does not run tests on pull requests; validation is local (`standards/ci-minutes.md`). |
 
 ## 3. How a job flows
@@ -33,7 +33,7 @@ flowchart TD
   E --> F[Developer agent builds on a branch]
   F --> G[Pull request into test, with build report]
   G --> H[Local verification block on the exact head commit]
-  H --> I[Five-lens review: security, code, tests and evals, UX, consistency]
+  H --> I[Four-lens review: Security, Code, Tests and evals, UX/Consistency]
   I -- any CHANGES, rounds left --> F
   I -- CHANGES after round 3 --> N[Needs human]
   I -- all PASS and verification on head --> J[Agent merges to test]
@@ -49,9 +49,9 @@ flowchart TD
 4. **Spec.** The PM agent writes the spec from `templates/spec.md`. Every acceptance criterion has a Verify line. The spec must pass the Definition of Ready (in the template) before build starts.
 5. **Build.** The developer agent builds on a branch, makes the simplest change that fully meets the spec, runs the repo's checks, and opens a pull request into `test`. The pull request description starts with a build report from `templates/build-report.md`.
 6. **Local verification.** The developer agent runs `scripts/verify-local.sh` (lint, types, unit, functional tests, the Playwright e2e suite under `tests/e2e/`, security scans) on the exact head commit and adds the Local verification block to the pull request. No stacked pull requests: each one targets `test` and gets a fresh block.
-7. **Review.** An independent reviewer runs the five-lens review from `templates/review.md` and writes one verdict per lens.
-8. **Rework.** Any CHANGES verdict sends the pull request back to the builder with the review file. See section 5.
-9. **Merge to `test`.** When all five lenses PASS and the Local verification block is all PASS on the same head commit, an agent merges the pull request into `test`. No human is needed for this step, unless an always-flagged item applies (section 7).
+7. **Review.** An independent reviewer runs the four-lens review from `templates/review.md` and writes one verdict per lens.
+8. **Rework.** Any CHANGES verdict sends the pull request back to the builder with the review file. See section 6.
+9. **Merge to `test`.** When all four lenses PASS and the Local verification block is all PASS on the same head commit, an agent merges the pull request into `test`. No human is needed for this step, unless an always-flagged item applies (section 7).
 10. **Ready-to-merge note.** The PM agent writes a short note from `templates/ready-to-merge.md`: what it is, how to try it, the checks, and anything to look at.
 11. **Human check.** The human pulls `test`, tries it, and either sends a punch list back to step 5 or approves.
 12. **Merge to `main`.** Only the human merges `test` into `main`. Releases and publishing each need the human's OK.
@@ -64,7 +64,7 @@ flowchart TD
 | Definition of Ready | Every criterion has a Verify line, scope and assumptions are written, expected flags are ticked | PM agent |
 | Build report | First line is `STATUS: READY`, with evidence per criterion | Developer agent |
 | Local verification | Block in the pull request, no FAIL, on the exact head commit | Developer agent |
-| Five-lens review | All five lenses `VERDICT: PASS` | Reviewer |
+| Four-lens review | All four lenses `VERDICT: PASS` (gate_version: four-v1) | Reviewer |
 | Merge to `test` | Review PASS and Local verification on the same commit, no unresolved flags | Developer agent |
 | Merge to `main` | The human has tested `test` and approves | Human |
 
@@ -72,19 +72,18 @@ flowchart TD
 
 All user-facing testing uses Playwright. Core and every bot repo keep a committed suite under `tests/e2e/`, run on desktop and mobile with the stub LLM by default, plus one opt-in live-provider smoke test (marker or env flag, cheap model, keys never logged). Every failure saves a screenshot and a trace. `verify-local.sh` runs the suite and it must PASS before any merge to `test`; the Local verification block lists the suite result (passes per project) and the head SHA. The Reviewer's evidence run includes the suite, and any new user-facing behaviour adds or updates its e2e tests in the same pull request. Full text: `standards/definition-of-done.md`.
 
-## 5. The five review lenses
+## 5. The four review lenses (gate_version: four-v1)
 
 Each lens gets exactly one line, `VERDICT: PASS` or `VERDICT: CHANGES`, followed by findings (`path:line`, problem with rule ID if applicable, impact, fix) and non-blocking notes.
 
 1. **Security.** Auth on new endpoints, input validation, injection and XSS, secrets in commits, data exposure in logs and pages, outbound calls, new dependencies, exposed ports.
-2. **Code.** Does what the spec asks and nothing more, handles errors and edge cases, reuses existing patterns, follows the repo's conventions, updates docs.
-3. **Tests and evals.** Every criterion has a test or a reproducible check, tests fail without the change, tests run in the local verification, no network or paid calls in tests.
-4. **UX.** The flow works with no dead ends, loading, empty and error states are useful, copy is short and plain, keyboard and small-screen use work. A change with nothing user-facing gets PASS with a note.
-5. **Consistency.** (BLOCKING) The change follows the pinned standards version and all applicable profiles from the repo's STANDARDS.md; violations of [APPROVED] rules are CHANGES with the rule ID cited; [PROPOSED] rule violations go under Notes; any new deviation needs a DEVIATIONS.md entry with Mike's approval reference before merge.
+2. **Code.** Does what the spec asks and nothing more, handles errors and edge cases, reuses existing patterns, follows the repo's conventions, updates docs. **Backend architecture and code-pattern consistency:** follows pinned standards (common.md, profile-bot.md); violations of [APPROVED] rules are CHANGES with rule ID; [PROPOSED] violations go under Notes.
+3. **Tests and evals.** Every criterion has a test or a reproducible check, tests fail without the change, tests run in the local verification, no network or paid calls in tests. **MUST EXECUTE required negatives and failure paths:** run guards against bad inputs/missing dependencies; return commands, bad inputs, observed exits, and intended guard failures.
+4. **UX/Consistency.** The flow works with no dead ends, loading, empty and error states are useful, copy is short and plain, keyboard and small-screen use work. Frontend layout, flow, brand, accessibility, usability against approved applicable profiles (profile-web.md, blog.md, brand.md). A change with nothing user-facing gets PASS with a note. Proposed preferences remain notes; backend consistency is retained by Code.
 
 ### Reviewer inputs (sanitized bundle)
 
-All five lenses get the same sanitized bundle:
+All four lenses get the same sanitized bundle:
 
 1. **Diff** — the patch file between base and head SHAs.
 2. **Acceptance criteria** — the spec's checklist with evidence run results attached (pass/fail per item).
@@ -116,7 +115,7 @@ In rounds 2 and 3, reviewers get a fresh bundle for the new head. Prior findings
 
 ## 6. Rework rules
 
-- A round is complete only when all five lens verdicts exist. Never resume the builder mid-round.
+- A round is complete only when all four lens verdicts exist. Never resume the builder mid-round.
 - Any CHANGES verdict starts a rework round. The builder answers every finding in the build report log: what was changed, or why not.
 - Maximum **3 rounds** in total (round 1 plus 2 rework rounds).
 - If any lens still says CHANGES after round 3, stop. The PM agent writes the ready-to-merge note marked **NOT READY** with the open findings, and the human decides.
@@ -147,10 +146,15 @@ Approval rules:
 
 For every pull request, log outside the notes: agent hours per role, coding-agent runs and model per role, review rounds, and the human's review time. These show whether the factory is working.
 
-## 9. Related files
+## 9. Disputed findings
+
+If a finding is contested, an arbiter (not builder or reviewer) may assess it using verbatim original reports, pinned rules/AC, and raw evidence. See `templates/arbiter.md`. Dispositions: accept, challenge (one challenge to same lens, one response), or escalate to Mike. The arbiter is **advisory only** — it cannot override a lens verdict. Only the originating lens can change its own verdict after explicit reconsideration. False PASSes, security findings, and broken required checks are protected and cannot be dismissed.
+
+## 10. Related files
 
 - `templates/spec.md`, `templates/build-report.md`, `templates/review.md`, `templates/ready-to-merge.md`
 - `templates/standards-pin.md`, `templates/deviations.md`, `templates/lens-launch.md`, `templates/pre-panel-checklist.md`
+- `templates/arbiter.md` — advisory arbitration for disputed findings only
 - `scripts/run-factory-guards.sh` — developer runs this (via `verify-local.sh`) before launching the panel
 - `standards/definition-of-done.md`
 - `standards/ci-minutes.md`

@@ -152,8 +152,9 @@ if [ ! -d "$FIXTURES" ]; then
 fi
 
 # Required fixtures - FAIL if any are missing
-REQUIRED_VALID="valid-five.json"
-REQUIRED_INVALID="invalid-duplicate-lens.json invalid-missing-lens.json invalid-malformed.json invalid-overall-absent.json invalid-overall-contradiction.json"
+# Note: Schema now uses four-v1 gate (4 lenses: Security, Code, Tests and evals, UX/Consistency)
+REQUIRED_VALID="valid-four.json"
+REQUIRED_INVALID="invalid-duplicate-lens.json invalid-missing-lens.json invalid-malformed.json invalid-overall-absent.json invalid-overall-contradiction.json invalid-all-pass-overall-changes.json"
 
 for f in $REQUIRED_VALID; do
   if [ ! -f "$FIXTURES/$f" ]; then
@@ -175,17 +176,25 @@ if [ $FAILED -ne 0 ]; then
   exit 1
 fi
 
-# Validate required fixtures
-validate "$FIXTURES/valid-five.json" "valid"
+# Validate required fixtures (four-v1 gate)
+echo "--- Four-lens gate (four-v1) fixtures ---"
+validate "$FIXTURES/valid-four.json" "valid"
 validate "$FIXTURES/invalid-duplicate-lens.json" "invalid"
 validate "$FIXTURES/invalid-missing-lens.json" "invalid"
 validate "$FIXTURES/invalid-malformed.json" "invalid"
 validate "$FIXTURES/invalid-overall-absent.json" "invalid"
 validate "$FIXTURES/invalid-overall-contradiction.json" "invalid"
+validate "$FIXTURES/invalid-all-pass-overall-changes.json" "invalid"
 
-# Optional fixtures
-[ -f "$FIXTURES/valid-all-pass-overall-pass.json" ] && validate "$FIXTURES/valid-all-pass-overall-pass.json" "valid"
-[ -f "$FIXTURES/invalid-all-pass-overall-changes.json" ] && validate "$FIXTURES/invalid-all-pass-overall-changes.json" "invalid"
+# Test that old five-lens records are rejected by new four-lens gate
+[ -f "$FIXTURES/invalid-five-record-new-gate.json" ] && validate "$FIXTURES/invalid-five-record-new-gate.json" "invalid"
+[ -f "$FIXTURES/invalid-old-lens-names.json" ] && validate "$FIXTURES/invalid-old-lens-names.json" "invalid"
+
+# Historical five-lens fixture (valid under OLD schema, invalid under new four-lens gate)
+# This documents that old records exist but cannot pass the new gate
+echo
+echo "--- Historical fixture (five-lens, pre-four-v1) ---"
+[ -f "$FIXTURES/valid-five.json" ] && validate "$FIXTURES/valid-five.json" "invalid"
 
 echo
 

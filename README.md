@@ -7,8 +7,8 @@ This repo defines a software factory: a process for turning ideas into working s
 1. **Request and brief.** A PM agent ranks the request and writes a one-page brief. The human approves it.
 2. **Spec.** The PM agent writes a spec. Every acceptance criterion has a Verify line that says how to check it.
 3. **Build.** A developer agent builds on a branch, opens a pull request into `test`, and writes a build report.
-4. **Review.** An independent review covers five lenses: Security, Code, Tests and evals, UX, and Consistency. Each lens says PASS or CHANGES. Any CHANGES sends the work back, up to three rounds in total.
-5. **Merge to test.** When all five lenses pass and the pull request has a Local verification block on the same head commit, an agent merges to `test`. CI only builds, publishes and deploys.
+4. **Review.** An independent review covers four lenses: Security, Code, Tests and evals, and UX/Consistency. Each lens says PASS or CHANGES. Any CHANGES sends the work back, up to three rounds in total. Disputed findings may be assessed by an advisory arbiter (see `templates/arbiter.md`).
+5. **Merge to test.** When all four lenses pass and the pull request has a Local verification block on the same head commit, an agent merges to `test`. CI only builds, publishes and deploys.
 6. **Human check.** The human gets a short ready-to-merge note, tries the change, and is the only one who merges `test` into `main`.
 
 Money, auth and permissions, deploys, database changes, messages to real people, new dependencies, public exposure and business decisions are always flagged for the human.
@@ -47,7 +47,7 @@ standards/
 templates/
   spec.md                 build spec with acceptance criteria and Verify lines
   build-report.md         the builder's report, first line is the status
-  review.md               five-lens review, one verdict per lens
+  review.md               four-lens review, one verdict per lens (gate_version: four-v1)
   ready-to-merge.md       the short note the human reads before merging
   standards-pin.md        template for project STANDARDS.md
   deviations.md           template for project DEVIATIONS.md

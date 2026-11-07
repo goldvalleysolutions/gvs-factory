@@ -115,11 +115,12 @@ Only include profiles declared in the repo's STANDARDS.md. Then append each decl
 _For the orchestrator launching lens runs:_
 
 1. Launch each lens as a **NEW cloud-agent** on the repo at a detached HEAD at the PR's base SHA `<base_sha>` (an exact commit, never a branch name), not a reply or continued session.
-2. All five lenses get the same sanitized bundle.
+2. All four lenses get the same sanitized bundle.
 3. Do not include prior findings in any lens input.
-4. Wait for all five verdicts before combining.
-5. Record provenance in the project repo's `review/<pr_number>-round<round_number>.json` using the schema.
+4. Wait for all four verdicts before combining.
+5. Record provenance in the project repo's `review/<pr_number>-round<round_number>.json` using the schema (gate_version: four-v1).
 6. Check closure against prior findings only after all verdicts are in.
+7. **Tests and evals** lens is allowed scratch-only independent execution from frozen head inputs (temporary files, no source edits, no new provider calls, no builder/other-lens narratives). Must return commands run, bad inputs, observed exits, and intended guard failures.
 
 ### Model selection
 

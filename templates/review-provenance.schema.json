@@ -4,7 +4,7 @@
   "title": "Review Provenance",
   "description": "Provenance record for a review round. Saved as review/<pr_number>-round<round_number>.json.",
   "type": "object",
-  "required": ["pr", "round", "head_sha", "base_sha", "standards_version", "lenses", "timestamp", "overall_verdict"],
+  "required": ["pr", "round", "head_sha", "base_sha", "standards_version", "gate_version", "lenses", "timestamp", "overall_verdict"],
   "properties": {
     "pr": {
       "type": "integer",
@@ -30,6 +30,11 @@
       "type": "string",
       "description": "Version of the pinned standards (e.g., 'v1.0.0')"
     },
+    "gate_version": {
+      "type": "string",
+      "const": "four-v1",
+      "description": "Gate version identifier. Must be 'four-v1' for four-lens gate."
+    },
     "profiles": {
       "type": "array",
       "items": {
@@ -39,12 +44,19 @@
     },
     "lenses": {
       "type": "array",
-      "minItems": 5,
-      "maxItems": 5,
+      "minItems": 4,
+      "maxItems": 4,
       "items": {
         "$ref": "#/$defs/lens_record"
       },
-      "description": "One record per lens (Security, Code, Tests and evals, UX, Consistency)"
+      "description": "One record per lens (Security, Code, Tests and evals, UX/Consistency)"
+    },
+    "arbitration": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/arbitration_record"
+      },
+      "description": "Arbitration records for disputed findings (empty array if no disputes)"
     },
     "evidence_run": {
       "$ref": "#/$defs/evidence_run",
@@ -114,16 +126,7 @@
     {
       "properties": {
         "lenses": {
-          "contains": { "properties": { "lens": { "const": "UX" } }, "required": ["lens"] },
-          "minContains": 1,
-          "maxContains": 1
-        }
-      }
-    },
-    {
-      "properties": {
-        "lenses": {
-          "contains": { "properties": { "lens": { "const": "Consistency" } }, "required": ["lens"] },
+          "contains": { "properties": { "lens": { "const": "UX/Consistency" } }, "required": ["lens"] },
           "minContains": 1,
           "maxContains": 1
         }
@@ -137,7 +140,7 @@
       "properties": {
         "lens": {
           "type": "string",
-          "enum": ["Security", "Code", "Tests and evals", "UX", "Consistency"],
+          "enum": ["Security", "Code", "Tests and evals", "UX/Consistency"],
           "description": "Which lens this record is for"
         },
         "verdict": {
@@ -182,6 +185,55 @@
         "notes": {
           "type": "string",
           "description": "Any notes about this lens run (e.g., 'same model as builder')"
+        }
+      }
+    },
+    "arbitration_record": {
+      "type": "object",
+      "required": ["finding_id", "lens", "disposition", "basis", "original_verdict", "final_lens_verdict"],
+      "properties": {
+        "finding_id": {
+          "type": "string",
+          "description": "Identifier for the disputed finding (e.g., 'F19')"
+        },
+        "lens": {
+          "type": "string",
+          "description": "Originating lens that raised the finding"
+        },
+        "original_report_ref": {
+          "type": "string",
+          "description": "Path and line reference to verbatim original report"
+        },
+        "disposition": {
+          "type": "string",
+          "enum": ["accept", "challenge", "escalate"],
+          "description": "Arbiter disposition: accept finding, challenge to lens, or escalate to Mike"
+        },
+        "basis": {
+          "type": "string",
+          "description": "Rule/AC citation and evidence summary for disposition"
+        },
+        "challenge": {
+          "type": ["string", "null"],
+          "description": "Challenge text sent to lens (if disposition=challenge)"
+        },
+        "lens_response_ref": {
+          "type": ["string", "null"],
+          "description": "Reference to lens response (if challenged)"
+        },
+        "original_verdict": {
+          "type": "string",
+          "enum": ["PASS", "CHANGES"],
+          "description": "Original verdict from the lens"
+        },
+        "final_lens_verdict": {
+          "type": "string",
+          "enum": ["PASS", "CHANGES"],
+          "description": "Final verdict after any lens reconsideration"
+        },
+        "escalation_ref": {
+          "type": ["string", "null"],
+          "description": "Reference to escalation (if escalated to Mike)"
         }
       }
     },

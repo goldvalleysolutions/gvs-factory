@@ -34,7 +34,7 @@ In rounds 2 and 3, reviewers get a fresh bundle for the new head. Prior findings
 **Residual risk:** True sandboxing (no repo access, only the bundle) is not available. The design records this rather than claiming it.
 
 ## Ground rules
-1. **Run it once, before the lenses.** Outside the lens runs, the Reviewer checks out the branch, runs the check commands from `AGENTS.md` (or `scripts/verify-local.sh`), runs the tests including the Playwright e2e suite under `tests/e2e/` (desktop and mobile projects, stub LLM; record passes per project and the head SHA), and starts the app for anything a user or another system can see. Record pass/fail evidence for each item on the spec's acceptance checklist, reproducing at least one yourself. If you could not run something, say so and why. Then run each lens fresh and stateless with only the sanitized bundle. A lens never sees another lens's output; combine the verdicts only after all five return.
+1. **Run it once, before the lenses.** Outside the lens runs, the Reviewer checks out the branch, runs the check commands from `AGENTS.md` (or `scripts/verify-local.sh`), runs the tests including the Playwright e2e suite under `tests/e2e/` (desktop and mobile projects, stub LLM; record passes per project and the head SHA), and starts the app for anything a user or another system can see. Record pass/fail evidence for each item on the spec's acceptance checklist, reproducing at least one yourself. If you could not run something, say so and why. Then run each lens fresh and stateless with only the sanitized bundle. A lens never sees another lens's output; combine the verdicts only after all four return.
 2. **Each lens gets its own verdict line**, exactly `VERDICT: PASS` or `VERDICT: CHANGES`.
 3. **CHANGES only for real problems:** a bug, a spec gap, a failing check, a security issue, a standards violation with a rule ID, or a clear convention break. A failing check is always CHANGES.
 4. **Do not block on taste.** Style preferences, naming and "nice to have" ideas go under Notes, never Findings.
@@ -60,7 +60,7 @@ _Look at: auth on every new endpoint; signed links (signing, expiry, tampering, 
 ## Lens 2 · Code
 VERDICT: PASS | CHANGES
 
-_Look at: does what the spec requires and nothing more; edge cases, missing awaits, unhandled errors, swallowed exceptions; reuse of existing helpers and patterns; conventions in `AGENTS.md` and neighbouring code; docs and `.env.example` updated; commits are small and nothing stray is committed._
+_Look at: does what the spec requires and nothing more; edge cases, missing awaits, unhandled errors, swallowed exceptions; reuse of existing helpers and patterns; conventions in `AGENTS.md` and neighbouring code; docs and `.env.example` updated; commits are small and nothing stray is committed. **Backend architecture and code-pattern consistency:** the change follows the pinned standards version and all applicable profiles declared in the repo's STANDARDS.md (common.md, profile-bot.md); any new pattern matches or extends the declared reference files; approval/citation/deviation integrity is maintained; a violation of an [APPROVED] rule is CHANGES with the rule ID cited; a violation of a [PROPOSED] rule goes under Notes, not Findings._
 
 ### Findings
 ### Notes
@@ -68,31 +68,26 @@ _Look at: does what the spec requires and nothing more; edge cases, missing awai
 ## Lens 3 · Tests and evals
 VERDICT: PASS | CHANGES
 
-_Look at: every AC in the spec has a test or a reproducible check; any new user-facing behaviour adds or updates Playwright e2e tests under `tests/e2e/` in this PR (missing e2e coverage is CHANGES); the e2e suite PASSes on desktop and mobile in the evidence run, with screenshot and trace saved on failure; tests fail without the change (spot-check one by reverting it locally); the new tests run in the local verification; no network or paid calls in tests; timer logic tested with controlled time, not sleeps; existing suites still pass unchanged._
+_Look at: every AC in the spec has a test or a reproducible check; any new user-facing behaviour adds or updates Playwright e2e tests under `tests/e2e/` in this PR (missing e2e coverage is CHANGES); the e2e suite PASSes on desktop and mobile in the evidence run, with screenshot and trace saved on failure; tests fail without the change (spot-check one by reverting it locally); the new tests run in the local verification; no network or paid calls in tests; timer logic tested with controlled time, not sleeps; existing suites still pass unchanged. **MUST EXECUTE required negatives and failure paths:** run guards against bad inputs/missing dependencies and verify tests prove their claims — not repeat verify-local output. Execute frozen head inputs in permitted scratch space and return raw evidence: commands run, bad inputs, observed exits, and intended guard failures._
 
 ### Findings
 ### Notes
 
-## Lens 4 · UX
+## Lens 4 · UX/Consistency
 VERDICT: PASS | CHANGES
 
-_Look at, with the app running: the flow does what the spec promises with no dead ends; loading, empty, error and expired states say something useful; copy is short, plain and consistent; real buttons and links, labels, keyboard use; works at phone width (390 px). If the PR has no user-facing change, write PASS and say so._
-
-### Findings
-### Notes
-
-## Lens 5 · Consistency
-VERDICT: PASS | CHANGES
-
-_This lens is BLOCKING. Look at: the change follows the pinned standards version and all applicable profiles declared in the repo's STANDARDS.md; any new pattern matches or extends the declared reference files; a violation of an [APPROVED] rule is CHANGES with the rule ID cited; a violation of a [PROPOSED] rule goes under Notes, not Findings; any new deviation has an entry in DEVIATIONS.md with Mike's approval reference before merge; existing baselined deviations are not made worse; no new drift is introduced without approval._
+_**UX:** Look at, with the app running: the flow does what the spec promises with no dead ends; loading, empty, error and expired states say something useful; copy is short, plain and consistent; real buttons and links, labels, keyboard use; works at phone width (390 px). If the PR has no user-facing change, write PASS and say so. **Consistency:** Look at frontend layout, flow, brand, accessibility, usability and operator instructions against approved applicable profiles (profile-web.md, blog.md, brand.md). Proposed preferences remain notes; backend consistency is retained by Code._
 
 ### Findings
 ### Notes
 
 ## Round result
-- **All five PASS and a Local verification block with no FAIL on the same head** → an agent merges to `test`; the PM agent writes the ready-to-merge note.
+- **All four PASS and a Local verification block with no FAIL on the same head** → an agent merges to `test`; the PM agent writes the ready-to-merge note.
 - **Any CHANGES and rounds left** (max 3 rounds: round 1 plus 2 rework rounds) → the developer agent resumes the builder with this file.
 - **Any CHANGES after round 3** → stop; the PM agent writes the ready-to-merge note marked **NOT READY** with the open findings, for the human to decide.
+
+## Disputed findings
+If a finding is contested, the arbiter (not builder or reviewer) may assess it using verbatim original reports, pinned rules/AC, and raw evidence. See `templates/arbiter.md`. Dispositions: accept, challenge (one challenge to same lens, one response), or escalate to Mike. The arbiter is advisory only — it cannot override a lens verdict. Only the originating lens can change its own verdict after explicit reconsideration. False PASSes, security findings, and broken required checks are protected and cannot be dismissed.
 
 ---
 
