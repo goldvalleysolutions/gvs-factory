@@ -30,31 +30,44 @@ flowchart TD
   C --> D{Human approves brief?}
   D -- no --> P[Parked or reworked]
   D -- yes --> E[Spec: acceptance criteria with Verify lines]
-  E --> F[Developer agent builds on a branch]
-  F --> G[Pull request into test, with build report]
-  G --> H[Local verification block on the exact head commit]
-  H --> I[Four-lens review: security, code, tests and evals, UX]
-  I -- any CHANGES, rounds left --> F
-  I -- CHANGES after round 3 --> N[Needs human]
-  I -- all PASS and verification on head --> J[Agent merges to test]
-  J --> K[Ready-to-merge note]
-  K --> L[Human tests test hands-on]
-  L -- punch list --> F
-  L -- OK --> M[Human merges test to main]
+  E --> F[Chief architect handoff]
+  F --> G[Developer agent builds on a branch]
+  G --> H[Pull request into test, with build report]
+  H --> I[Local verification block on exact head]
+  I --> J[Independent test matrix execution]
+  J --> K[Four-lens review as double-checks]
+  K -- any CHANGES, rounds left --> G
+  K -- CHANGES after round 3 --> N[Needs human]
+  K -- all PASS and verification on head --> L[Agent merges to test]
+  L --> M[Ready-to-merge note]
+  M --> O[Human tests test hands-on]
+  O -- punch list --> G
+  O -- OK --> Q[Human merges test to main]
 ```
 
 1. **Request.** An idea or request comes in.
 2. **Triage.** The PM agent ranks it against the current goals. Off-goal items are parked, not deleted, with a note on what would bring them back.
 3. **Brief.** One page: the problem, who it is for, what done looks like. Nothing is ready to build until the human approves the brief.
-4. **Spec.** The PM agent writes the spec from `templates/spec.md`. Every acceptance criterion has a Verify line. The spec must pass the Definition of Ready (in the template) before build starts.
-5. **Build.** The developer agent builds on a branch, makes the simplest change that fully meets the spec, runs the repo's checks, and opens a pull request into `test`. The pull request description starts with a build report from `templates/build-report.md`.
-6. **Local verification.** The developer agent runs `scripts/verify-local.sh` (lint, types, unit, functional tests, the Playwright e2e suite under `tests/e2e/`, security scans) on the exact head commit and adds the Local verification block to the pull request. No stacked pull requests: each one targets `test` and gets a fresh block.
-7. **Review.** An independent reviewer runs the four-lens review from `templates/review.md` and writes one verdict per lens.
-8. **Rework.** Any CHANGES verdict sends the pull request back to the builder with the review file. See section 5.
-9. **Merge to `test`.** When all four lenses PASS and the Local verification block is all PASS on the same head commit, an agent merges the pull request into `test`. No human is needed for this step, unless an always-flagged item applies (section 7).
-10. **Ready-to-merge note.** The PM agent writes a short note from `templates/ready-to-merge.md`: what it is, how to try it, the checks, and anything to look at.
-11. **Human check.** The human pulls `test`, tries it, and either sends a punch list back to step 5 or approves.
-12. **Merge to `main`.** Only the human merges `test` into `main`. Releases and publishing each need the human's OK.
+4. **Spec.** The PM agent writes the spec from `templates/spec.md`. Every acceptance criterion has a Verify line and states the expected failure for invalid input. Validated lessons from `templates/lessons-log.md` are pulled in as known pitfalls. The spec must pass the Definition of Ready (in the template) before handoff.
+5. **Chief architect handoff.** The chief architect produces the handoff document (`templates/architect-handoff.md`) before the build starts. This pins the applicable standards and profiles, selects reference patterns, preserves the requirements verbatim from the spec, and produces the acceptance-to-test matrix (`templates/test-matrix.md`). Each criterion gets positive, negative, and environment cases, each with an exact command and expected output. This is preparation, not a review panel.
+6. **Build.** The developer agent builds on a branch against the test matrix, makes the simplest change that fully meets the spec, runs the repo's checks, and opens a pull request into `test`. The pull request description starts with a build report from `templates/build-report.md`. The builder's report is claims only, not evidence.
+7. **Local verification.** The developer agent runs `scripts/verify-local.sh` (lint, types, unit, functional tests, the Playwright e2e suite under `tests/e2e/`, security scans) on the exact head commit and adds the Local verification block to the pull request. No stacked pull requests: each one targets `test` and gets a fresh block.
+8. **Independent test matrix execution.** Before the four-lens review, the Reviewer executes the test matrix independently on the exact head commit. The Reviewer records the head SHA, environment, and raw outputs in the matrix. This is the evidence; the builder's report is not.
+9. **Four-lens review (double-checks).** The four lenses (Security, Code, Tests and evals, UX/Consistency) run as independent double-checks from `templates/review.md`. Each lens sees only the diff, the sanitized bundle, and the matrix evidence. Lenses never see the builder's narrative or prior verdicts. The Tests and evals lens must verify the matrix results and list the commands it ran; "Commands run: None" cannot PASS.
+10. **Rework.** Any CHANGES verdict sends the pull request back to the builder with the review file. See section 5.
+11. **Merge to `test`.** When all four lenses PASS and the Local verification block is all PASS on the same head commit, an agent merges the pull request into `test`. No human is needed for this step, unless an always-flagged item applies (section 7).
+12. **Ready-to-merge note.** The PM agent writes a short note from `templates/ready-to-merge.md`: what it is, how to try it, the checks, and anything to look at.
+13. **Human check.** The human pulls `test`, tries it, and either sends a punch list back to step 6 or approves.
+14. **Merge to `main`.** Only the human merges `test` into `main`. Releases and publishing each need the human's OK.
+
+## 3a. Learning loop
+
+After each job, outputs are analyzed for recurring patterns:
+- **Developer mistakes** that could be caught earlier (feed spec templates and matrix rows).
+- **Reviewer misses** where the panel should have caught a defect (feed regression checks).
+- **Unsupported findings** that were raised but later shown incorrect (prevent future false positives).
+
+Each candidate lesson is recorded in `templates/lessons-log.md` with source, evidence, class, disposition, and approval provenance. Only Mike-approved lessons feed spec prompts, reference patterns, and regression checks. No agent self-approves policy.
 
 ## 4. Gates
 
@@ -81,11 +94,11 @@ Each lens gets exactly one line, `VERDICT: PASS` or `VERDICT: CHANGES`, followed
 3. **Tests and evals.** Every criterion has a test or a reproducible check, tests fail without the change, tests run in the local verification, no network or paid calls in tests.
 4. **UX.** The flow works with no dead ends, loading, empty and error states are useful, copy is short and plain, keyboard and small-screen use work. A change with nothing user-facing gets PASS with a note.
 
-Lens isolation (wave 1, T5):
+Lens isolation:
 
-- First, outside the lens runs, the Reviewer runs the branch and the app once and records pass/fail evidence for each item on the spec's acceptance checklist.
+- First, outside the lens runs, the Reviewer executes the test matrix (`templates/test-matrix.md`) on the exact head and records raw outputs and environment.
 - The Reviewer then runs each of the four lenses as its own fresh, stateless run.
-- A lens sees only the PR diff, the acceptance checklist with that evidence attached, and its own lens instructions.
+- A lens sees only the PR diff, the sanitized bundle, and the matrix evidence. A lens never sees the builder's narrative, the build report claims, or prior verdicts.
 - A lens never sees another lens's output.
 - The Reviewer combines the verdict only after all four lenses have returned.
 
@@ -131,6 +144,8 @@ For every pull request, log outside the notes: agent hours per role, coding-agen
 
 ## 9. Related files
 
-- `templates/spec.md`, `templates/build-report.md`, `templates/review.md`, `templates/ready-to-merge.md`
+- `templates/spec.md`, `templates/architect-handoff.md`, `templates/test-matrix.md`
+- `templates/build-report.md`, `templates/review.md`, `templates/ready-to-merge.md`
+- `templates/lessons-log.md`
 - `standards/definition-of-done.md`
 - `standards/ci-minutes.md`

@@ -24,11 +24,13 @@ _One task per item. The builder works through them in order and commits per task
 2. Only the signed-in user's notes are included.
 
 **Acceptance criteria**
-_Each one is one observable behaviour plus how to check it, runnable by someone who only has the repo. No criterion without a Verify line._
+_Each one is one observable behaviour plus how to check it, runnable by someone who only has the repo. No criterion without a Verify line. Each criterion must state both the expected success AND the expected failure or rejection for invalid input._
 - **AC-T1.1** A signed-in user gets a CSV of their own notes.
   **Verify:** `pytest tests/test_export.py::test_export_own_notes` → passes.
+  **Negative:** A signed-in user with no notes gets an empty CSV (header only). `pytest tests/test_export.py::test_export_empty` → passes.
 - **AC-T1.2** A signed-out request is refused.
   **Verify:** `curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/notes/export.csv` → `401`.
+  **Negative:** A request with an invalid token is refused. `curl -H "Authorization: Bearer invalid" ...` → `401`.
 - **AC-T1.3** The notes list shows an "Export CSV" button that downloads the file.
   **Verify:** start the app, sign in as `demo@example.com`, open `/notes`, click "Export CSV"; expect a `notes.csv` download. Screenshot in the build report.
 
@@ -67,10 +69,30 @@ _Tick the ones this PR will trigger, so the human knows where to look first. The
 - [ ] Safety-critical logic
 - [ ] Product or business decision (thresholds, prices, public copy)
 
-## 8. Definition of Ready (PM agent ticks before build)
+## 8. Known pitfalls (from lessons log)
+_Pull in validated lessons from `templates/lessons-log.md` that apply to this work. Only Mike-approved lessons appear here._
+
+| Lesson ID | Summary | How it applies here |
+|---|---|---|
+| — | — | — |
+
+_If no validated lessons apply, write "None applicable."_
+
+## 9. Definition of Ready (PM agent ticks before build)
 - [ ] Every AC has a Verify line with an exact command or check
+- [ ] Every AC states the expected failure or rejection for invalid input (negative case)
 - [ ] Out of scope listed per task and for the whole PR
 - [ ] Assumptions marked product vs technical
 - [ ] Expected flags ticked
 - [ ] Repo has `AGENTS.md` (or a task adds it)
+- [ ] Known pitfalls section completed (validated lessons pulled in)
 - [ ] The human approved the spec (date)
+
+## 10. Handoff to architect
+_After the human approves the spec, the chief architect produces the handoff document before the build starts._
+
+- [ ] Architect handoff completed (`templates/architect-handoff.md`)
+- [ ] Standards and profiles pinned
+- [ ] Reference patterns selected
+- [ ] Test matrix completed with positive, negative, and environment cases (`templates/test-matrix.md`)
+- [ ] Requirements copied verbatim (not reworded)
