@@ -52,16 +52,16 @@ _Each one is one observable behaviour plus how to check it, runnable by someone 
 
 - **AC-G.1** The Local verification block has no FAIL on the pull request's last commit.
   **Verify:** block in the pull request, SHA equals the head commit, no `FAIL`.
-  **Negative:** A deliberate lint error causes FAIL. `echo "x=1" >> app/routes/notes.py && bash scripts/verify-local.sh` exits non-zero.
+  **Negative:** A deliberate lint error causes FAIL. `echo "import os" >> app/routes/notes.py && bash scripts/verify-local.sh` exits non-zero (unused import).
 
 - **AC-G.2** Lint and format pass locally with the exact commands from `AGENTS.md`.
   **Verify:** the commands exit 0.
-  **Negative:** A deliberate lint error causes failure. `echo "x=1" >> app/routes/notes.py && ruff check app/` exits non-zero.
+  **Negative:** A deliberate lint error causes failure. `echo "import os" >> app/routes/notes.py && ruff check app/` exits non-zero (F401 unused import).
 
 - **AC-G.3** No secrets, keys, or real personal data are committed; `.env` is not committed.
   **Verify:** `git diff <base>...HEAD --name-only | grep -x .env` returns no output; a secret scan of the diff returns no findings.
-  **Negative:** A committed secret is detected. In an isolated temp git repo: `cd $(mktemp -d) && git init -q && echo "AKIAIOSFODNN7TESTING" > aws.txt && git add aws.txt && git commit -q -m "test" && gitleaks detect --source .` exits non-zero (rule: aws-access-token). This is a synthetic fixture with valid AWS key format but is not a real credential.
-  **Positive (clean):** `cd $(mktemp -d) && git init -q && echo "no secrets here" > readme.txt && git add readme.txt && git commit -q -m "test" && gitleaks detect --source .` exits zero.
+  **Negative:** A scanner fixture detects a synthetic secret. `d=$(mktemp -d) && printf 'AKIA%s\n' 'IOSFODNN7TESTING' > "$d/aws.txt" && gitleaks dir "$d"` exits non-zero (rule: aws-access-token). The key is generated at runtime from parts to avoid triggering scanners on this repo.
+  **Positive (clean):** `d=$(mktemp -d) && echo "no secrets here" > "$d/readme.txt" && gitleaks dir "$d"` exits zero.
 
 - **AC-G.4** The default configuration makes zero paid or outbound calls to real providers.
   **Verify:** the named test or check for this repo.

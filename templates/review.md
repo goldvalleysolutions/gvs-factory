@@ -9,7 +9,7 @@ _Run by a Reviewer that did not write the code. Save as `review-round-<N>.md` wi
 
 ## Ground rules
 
-1. **Execute the test matrix first.** Before the lens runs, the Reviewer executes the test matrix (`templates/test-matrix.md`) on the exact head commit. Record the head SHA, environment, and raw outputs in the matrix's Execution record section. This is the evidence; the builder's report is claims only and does not substitute. Before recording, redact secrets, tokens, keys, `.env` values, and real personal data as `[REDACTED]`; redaction is the only allowed edit to verbatim evidence. Run gitleaks over recorded evidence before commit. A failed or blocked matrix case is CHANGES unless the human waives it.
+1. **Execute the test matrix first.** Before the lens runs, the Reviewer executes the test matrix (`templates/test-matrix.md`) on the exact head commit. Record the head SHA, environment, and raw outputs in the matrix's Execution record section. This is the evidence; the builder's report is claims only and does not substitute. Before recording, redact secrets, tokens, keys, `.env` values, and real personal data as `[REDACTED]`; redaction is the only allowed edit to verbatim evidence. Run gitleaks over recorded evidence before commit. A failed or blocked matrix case is CHANGES.
 2. **Run the verification suite.** Check out the branch, run the check commands from `AGENTS.md` (or `scripts/verify-local.sh`), run the tests including the Playwright e2e suite under `tests/e2e/` (desktop and mobile projects, stub LLM; record passes per project and the head SHA), and start the app for anything a user or another system can see. Record pass/fail evidence for each item on the spec's acceptance checklist. If you could not run something, say so and why.
 3. **Run each lens fresh and stateless.** Each lens sees only the sanitized bundle (see `docs/process.md` section 5a): the diff, the verbatim AC text, the executed matrix results (commands, expected and actual outputs, head SHA), and the lens's own instructions. A lens never sees the builder's narrative, the build report claims, prior verdicts, the handoff document, or secrets. A lens never sees another lens's output. Combine the verdicts only after all four return.
 4. **Each lens gets its own verdict line**, exactly `VERDICT: PASS` or `VERDICT: CHANGES`.
@@ -18,6 +18,7 @@ _Run by a Reviewer that did not write the code. Save as `review-round-<N>.md` wi
 7. **Do not block on pre-existing issues** the PR did not make worse; mention them under Notes.
 8. From round 2, earlier findings reach lenses only as neutral re-check rows in the matrix, with no verdict, no originating lens name, and no reviewer wording. The lens judges them fresh.
 9. Findings give `path:line`, the problem, its impact, and the fix you want. Write "None." when there are none.
+10. A PASS requires the lens to have run at least the commands listed as required (Tests and evals: the negative and environment cases). "Commands run: None" means CHANGES.
 
 ## Test matrix execution
 
@@ -32,7 +33,7 @@ _Link to the full matrix execution record at `<path to test-matrix.md>`, Executi
 - Failed (actual did not match expected): <n>
 - Blocked (could not execute): <n>
 
-_A failed or blocked case is CHANGES unless the human waives it._
+_A failed or blocked case is CHANGES._
 
 ## Commands run
 
@@ -66,7 +67,7 @@ _Look at: backend architecture and code consistency; does what the spec requires
 
 VERDICT: PASS | CHANGES
 
-_This lens re-executes the negative and environment cases from the matrix and must list the commands it ran. An empty "Commands run" section cannot PASS. Tests run with no secrets, no network, and no paid calls._
+_This lens re-executes the negative and environment cases from the matrix and must list the commands it ran. "Commands run: None" means CHANGES. Tests run with no secrets, no network, and no paid calls._
 
 _Look at: the test matrix was executed independently on the exact head, with raw outputs recorded; re-execute the negative and environment cases from the matrix; every AC in the spec has a test or a reproducible check; any new user-facing behaviour adds or updates Playwright e2e tests under `tests/e2e/` in this PR (missing e2e coverage is CHANGES); the e2e suite PASSes on desktop and mobile in the evidence run, with screenshot and trace saved on failure; tests fail without the change (spot-check one by reverting it locally); the new tests run in the local verification; no secrets, no network, and no paid calls in tests; timer logic tested with controlled time, not sleeps; existing suites still pass unchanged._
 
@@ -93,7 +94,7 @@ _List every command this lens executed. This section must not be empty._
 
 VERDICT: PASS | CHANGES
 
-_Look at, with the app running: frontend patterns, flow, style, brand, accessibility, and usability; the flow does what the spec promises with no dead ends; loading, empty, error, and expired states say something useful; copy is short, plain, and consistent; real buttons and links, labels, keyboard use; works at phone width (390 px). If the PR has no user-facing change, write PASS and say so._
+_Runtime evidence required: the sanitized bundle must include runtime evidence from the exact head (screenshots, command output, or Playwright traces). Without runtime evidence, this lens reviews docs and diff only and must not claim "app running". With runtime evidence, look at: frontend patterns, flow, style, brand, accessibility, and usability; the flow does what the spec promises with no dead ends; loading, empty, error, and expired states say something useful; copy is short, plain, and consistent; real buttons and links, labels, keyboard use; works at phone width (390 px). If the PR has no user-facing change, write PASS and say so._
 
 ### Findings
 
@@ -101,7 +102,7 @@ _Look at, with the app running: frontend patterns, flow, style, brand, accessibi
 
 ## Round result
 
-- **All four PASS and a Local verification block with no FAIL on the same head:** an agent merges to `test`; the PM agent writes the ready-to-merge note.
+- **All four PASS, a Local verification block with no FAIL, and test matrix executed on the same head:** an agent merges to `test`; the PM agent writes the ready-to-merge note.
 - **Any CHANGES and rounds left** (max 3 rounds: round 1 plus 2 rework rounds): the Developer agent resumes the builder with this file.
 - **Any CHANGES after round 3:** stop; the PM agent writes the ready-to-merge note marked **NOT READY** with the open findings, for the human to decide.
 

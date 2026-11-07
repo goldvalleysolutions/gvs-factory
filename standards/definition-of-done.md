@@ -6,11 +6,11 @@ A change is done when every item below is true. The PM agent checks items 1 to 1
 
 2. **Local verification on the exact head.** The pull request has a Local verification block with no FAIL, run on the commit being merged (see `standards/ci-minutes.md`). No stacked pull requests.
 
-3. **Test matrix executed independently.** The Reviewer executed the test matrix (`templates/test-matrix.md`) on the exact head commit before the four-lens review. The matrix records the head SHA, environment, and raw outputs. The builder's claims do not substitute for this evidence. A failed or blocked case is CHANGES unless the human waives it.
+3. **Test matrix executed independently.** The Reviewer executed the test matrix (`templates/test-matrix.md`) on the exact head commit before the four-lens review. The matrix records the head SHA, environment, and raw outputs. The builder's claims do not substitute for this evidence. A failed or blocked case is CHANGES.
 
 4. **Four lenses pass.** Security, Code, Tests and evals, and UX/Consistency each have `VERDICT: PASS` on that same commit, within 3 review rounds. The lenses act as independent double-checks, receiving only the sanitized bundle (see `docs/process.md` section 5a), never the builder's narrative or prior verdicts.
 
-5. **Tests and evals ran commands.** The Tests and evals lens re-executed the negative and environment cases and listed the commands it ran. An empty "Commands run" section cannot PASS. Tests run with no secrets, no network, and no paid calls.
+5. **Tests and evals ran commands.** The Tests and evals lens re-executed the negative and environment cases and listed the commands it ran. "Commands run: None" means CHANGES. Tests run with no secrets, no network, and no paid calls.
 
 6. **Scope held.** No files changed outside the spec's areas. Out-of-scope items are untouched.
 
