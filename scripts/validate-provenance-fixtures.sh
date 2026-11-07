@@ -2,7 +2,7 @@
 # Validate provenance fixtures against the schema.
 # Exit 0 if valid fixtures pass and all invalid fixtures fail, exit 1 otherwise.
 #
-# REQUIRED: python3, jsonschema>=4.18 (with Draft202012Validator and minContains/maxContains)
+# REQUIRED: python3, jsonschema==4.23.0 (with Draft202012Validator and minContains/maxContains)
 # Missing dependencies are FAIL, not SKIP.
 set -u
 

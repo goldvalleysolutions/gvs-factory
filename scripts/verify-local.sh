@@ -78,6 +78,8 @@ run() {
   fi
 }
 skip() { local shown=$2; [ "$1" != "." ] && shown="$1: $2"; add_row "$shown" "SKIP ($3)" "0s"; }
+# na <label> <reason>: Not applicable - documented exclusion, not a skip or failure
+na() { add_row "$1" "N/A ($2)" "0s"; }
 # missing <tool> [reason]
 missing() {
   local why=${2:-not installed}
@@ -205,7 +207,10 @@ if [ -n "${VERIFY_COMPOSE_TEST:-}" ]; then
   if [ $STACK_UP -eq 1 ]; then run . "$VERIFY_COMPOSE_TEST" bash -c "$VERIFY_COMPOSE_TEST"
   else skip . "$VERIFY_COMPOSE_TEST" "compose stack not up"; fi
 fi
-if [ -n "${VERIFY_E2E_CMD:-}" ]; then
+if [ -n "${VERIFY_E2E_NA:-}" ]; then
+  # Documented N/A - this repo explicitly does not have e2e tests (e.g., standards-only repo)
+  na "playwright e2e" "$VERIFY_E2E_NA"
+elif [ -n "${VERIFY_E2E_CMD:-}" ]; then
   if [ -n "$COMPOSE_FILE_FOUND" ] && [ $STACK_UP -eq 0 ]; then skip . "$VERIFY_E2E_CMD" "compose stack not up"
   else run . "$VERIFY_E2E_CMD" bash -c "$VERIFY_E2E_CMD"; fi
 elif [ $ALLOW_MISSING -eq 1 ]; then

@@ -1,0 +1,4 @@
+# Factory guard dependencies
+# Pin exact versions to ensure reproducible behavior
+jsonschema==4.23.0
+packaging>=21.0

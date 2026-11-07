@@ -3,7 +3,7 @@
 # Exit non-zero if any guard fails or if a required dependency is missing.
 # Never print a successful overall result when a required guard was skipped.
 #
-# Required: bash, grep, sed, cut, xargs, python3, jsonschema>=4.18
+# Required: bash, grep, sed, cut, xargs, find, awk, python3, jsonschema==4.23.0
 # Usage: scripts/run-factory-guards.sh [--verbose] [--root DIR]
 set -u
 
@@ -35,8 +35,8 @@ pass() { echo "PASS: $1"; }
 check_deps() {
   local missing=0
 
-  # Check shell tools
-  for cmd in grep sed cut xargs; do
+  # Check shell tools - every tool used by any guard
+  for cmd in grep sed cut xargs find awk; do
     if ! command -v "$cmd" >/dev/null 2>&1; then
       fail "$cmd not installed (required)"
       missing=1
@@ -48,7 +48,7 @@ check_deps() {
     missing=1
   fi
 
-  # Check jsonschema with Draft202012Validator and minContains/maxContains support
+  # Check jsonschema==4.23.0 with Draft202012Validator and minContains/maxContains support
   if [ $missing -eq 0 ]; then
     if ! python3 << 'PYCHECK' 2>/dev/null; then
 import sys
@@ -56,8 +56,10 @@ try:
     import jsonschema
     from jsonschema import Draft202012Validator
     from packaging import version
-    if version.parse(jsonschema.__version__) < version.parse("4.18"):
-        print(f"jsonschema {jsonschema.__version__} too old, need >= 4.18", file=sys.stderr)
+    current = version.parse(jsonschema.__version__)
+    required = version.parse("4.23.0")
+    if current < required:
+        print(f"jsonschema {jsonschema.__version__} too old, need == 4.23.0", file=sys.stderr)
         sys.exit(1)
     # Actual capability probe: minContains/maxContains
     test_schema = {

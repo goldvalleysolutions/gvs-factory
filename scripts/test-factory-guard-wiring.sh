@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 # Test that factory guards are properly wired into the development workflow.
-# This script verifies:
-# 1. templates/standards-pin.md names scripts/run-factory-guards.sh
-# 2. scripts/verify-local.sh invokes scripts/run-factory-guards.sh
-# 3. The runner against tests/fixtures/factory-guards/pass/ exits 0
-# 4. The runner against each fail-* tree exits non-zero
-# 5. The missing-dependency harness for provenance validator exits non-zero
-# 6. Provenance contradiction checking rejects invalid records
+# This script EXECUTES guards (not just greps source) to prove they work.
 #
-# REQUIRED: python3, jsonschema>=4.18
+# Tests:
+# 1. Text wiring: templates/standards-pin.md and verify-local.sh name the runner
+# 2. Runner on current repo exits 0
+# 3. Runner on pass/ fixture tree exits 0
+# 4. Runner on each fail-* fixture tree exits non-zero
+# 5. Provenance validator passes on valid fixtures
+# 6. Provenance contradiction checking rejects invalid records
+# 7. Missing-dependency tests: strip each required tool from PATH and expect non-zero
+#
+# REQUIRED: python3, jsonschema==4.23.0, all shell tools
 # Missing dependencies cause FAIL, not SKIP.
 set -u
 
@@ -26,12 +29,17 @@ echo "=========================="
 echo
 
 # Check dependencies first
-if ! command -v python3 >/dev/null 2>&1; then
-  fail "python3 not installed (required for wiring tests)"
-  echo
-  echo "Wiring tests: FAIL (missing dependencies)"
-  exit 1
-fi
+for cmd in python3 grep sed cut xargs find awk; do
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    fail "$cmd not installed (required for wiring tests)"
+    echo
+    echo "Wiring tests: FAIL (missing dependencies)"
+    exit 1
+  fi
+done
+
+# === TEXT WIRING TESTS ===
+echo "--- Text wiring ---"
 
 # Test 1: standards-pin.md names run-factory-guards.sh
 if grep -q 'run-factory-guards.sh' templates/standards-pin.md 2>/dev/null; then
@@ -47,137 +55,102 @@ else
   fail "verify-local.sh does not invoke run-factory-guards.sh"
 fi
 
-# Test 3: Runner against current repo (pass) exits 0
+# === EXECUTION TESTS ===
+echo
+echo "--- Execution tests ---"
+
+# Test 3: Runner on current repo exits 0
 if scripts/run-factory-guards.sh >/dev/null 2>&1; then
   pass "run-factory-guards.sh exits 0 on current repo"
 else
   fail "run-factory-guards.sh exits non-zero on current repo (should pass)"
 fi
 
-# Test 4: pass/ fixture tree exists and has valid content
-if [ -d "tests/fixtures/factory-guards/pass" ]; then
-  # Verify pass fixtures have correct content that would pass guards
-  pass_ok=1
-  # Check for "Tests and evals" (not bare "Tests")
-  if [ -f "tests/fixtures/factory-guards/pass/templates/ready-to-merge.md" ]; then
-    if grep -q "Tests and evals" "tests/fixtures/factory-guards/pass/templates/ready-to-merge.md"; then
-      : # good
-    else
-      fail "pass/ fixture missing 'Tests and evals'"
-      pass_ok=0
-    fi
-  fi
-  # Check for "base SHA" (not "base ref")
-  if [ -f "tests/fixtures/factory-guards/pass/docs/process.md" ]; then
-    if grep -q "base SHA" "tests/fixtures/factory-guards/pass/docs/process.md"; then
-      if grep -q "base ref" "tests/fixtures/factory-guards/pass/docs/process.md"; then
-        fail "pass/ fixture has 'base ref' instead of 'base SHA'"
-        pass_ok=0
-      fi
-    else
-      fail "pass/ fixture missing 'base SHA'"
-      pass_ok=0
-    fi
-  fi
-  # Check for proper APPROVED tags
-  if [ -f "tests/fixtures/factory-guards/pass/standards/v1/common.md" ]; then
-    if grep -q '\[APPROVED:' "tests/fixtures/factory-guards/pass/standards/v1/common.md"; then
-      : # good
-    else
-      fail "pass/ fixture missing proper APPROVED: source"
-      pass_ok=0
-    fi
-  fi
-  [ $pass_ok -eq 1 ] && pass "pass/ fixture tree has valid content"
+# Test 4: Runner on pass/ fixture tree exits 0
+# We need to set up a complete mini-repo that will pass all guards
+echo "Setting up pass/ fixture execution test..."
+PASS_TMPDIR=$(mktemp -d)
+cleanup_pass() { rm -rf "$PASS_TMPDIR"; }
+trap cleanup_pass EXIT
+
+# Copy the pass/ fixture and add required files
+cp -r tests/fixtures/factory-guards/pass/* "$PASS_TMPDIR/" 2>/dev/null || true
+mkdir -p "$PASS_TMPDIR/templates" "$PASS_TMPDIR/scripts" "$PASS_TMPDIR/tests/fixtures/provenance"
+
+# Copy required templates (standards-pin without /tree/test/, lens-launch with middot)
+cat > "$PASS_TMPDIR/templates/standards-pin.md" << 'EOF'
+# Standards pin
+**Source:** https://github.com/example/factory/tree/v1.0.0/standards/v1
+Run scripts/run-factory-guards.sh before review.
+EOF
+
+cat > "$PASS_TMPDIR/templates/lens-launch.md" << 'EOF'
+## Lens <lens_number> · <Lens name>
+Review at base SHA and head SHA.
+## Standards input format
+Example: profile-web.md, blog.md, profile-bot.md
+EOF
+
+# Copy provenance validator and schema
+cp scripts/validate-provenance-fixtures.sh "$PASS_TMPDIR/scripts/" 2>/dev/null || true
+cp templates/review-provenance.schema.json "$PASS_TMPDIR/templates/" 2>/dev/null || true
+
+# Copy valid provenance fixtures
+for f in tests/fixtures/provenance/valid-*.json; do
+  [ -f "$f" ] && cp "$f" "$PASS_TMPDIR/tests/fixtures/provenance/"
+done
+
+# Initialize git
+(cd "$PASS_TMPDIR" && git init -q && git add -A && git commit -q -m "test" 2>/dev/null) || true
+
+# Run the guard runner on pass/ fixture
+if scripts/run-factory-guards.sh --root="$PASS_TMPDIR" >/dev/null 2>&1; then
+  pass "run-factory-guards.sh exits 0 on pass/ fixture tree"
 else
-  fail "pass/ fixture tree does not exist"
+  fail "run-factory-guards.sh exits non-zero on pass/ fixture tree (should pass)"
 fi
 
-# Test 5: Runner against each fail-* tree exits non-zero
+# Test 5: Runner on each fail-* fixture tree exits non-zero
+echo "Testing fail-* fixture trees..."
 for fail_tree in tests/fixtures/factory-guards/fail-*; do
   if [ -d "$fail_tree" ]; then
     tree_name=$(basename "$fail_tree")
-    # We test by checking if the specific failing content exists
-    # and the guard correctly identifies it
-    case "$tree_name" in
-      fail-lens-name)
-        if grep -q 'Security / Code / Tests / UX' "$fail_tree/"*.md 2>/dev/null; then
-          pass "$tree_name fixture has bare 'Tests' (negative case)"
-        else
-          fail "$tree_name fixture missing expected failing content"
-        fi
-        ;;
-      fail-base-ref)
-        if grep -q 'base ref' "$fail_tree/"*.md 2>/dev/null; then
-          pass "$tree_name fixture has 'base ref' (negative case)"
-        else
-          fail "$tree_name fixture missing expected failing content"
-        fi
-        ;;
-      fail-pr-number)
-        if grep -q 'PR #' "$fail_tree/"*.md 2>/dev/null; then
-          pass "$tree_name fixture has 'PR #' (negative case)"
-        else
-          fail "$tree_name fixture missing expected failing content"
-        fi
-        ;;
-      fail-approval-tag)
-        if grep -q '\[APPROVED\]' "$fail_tree/"*.md 2>/dev/null && ! grep -q '\[APPROVED:' "$fail_tree/"*.md 2>/dev/null; then
-          pass "$tree_name fixture has [APPROVED] without source (negative case)"
-        else
-          fail "$tree_name fixture missing expected failing content"
-        fi
-        ;;
-      fail-citation)
-        if grep -q 'does-not-exist.md' "$fail_tree/"*.md 2>/dev/null; then
-          pass "$tree_name fixture cites nonexistent file (negative case)"
-        else
-          fail "$tree_name fixture missing expected failing content"
-        fi
-        ;;
-      fail-deviation)
-        if grep -qi 'to be migrated' "$fail_tree/"*.md 2>/dev/null; then
-          pass "$tree_name fixture has incomplete deviation (negative case)"
-        else
-          fail "$tree_name fixture missing expected failing content"
-        fi
-        ;;
-      fail-standards-pairing)
-        if [ -f "$fail_tree/DEVIATIONS.md" ] && [ ! -f "$fail_tree/STANDARDS.md" ]; then
-          pass "$tree_name fixture has DEVIATIONS without STANDARDS (negative case)"
-        else
-          fail "$tree_name fixture missing expected structure"
-        fi
-        ;;
-      fail-pin-url)
-        if grep -q '/tree/test/' "$fail_tree/"*.md 2>/dev/null; then
-          pass "$tree_name fixture has moving branch URL (negative case)"
-        else
-          fail "$tree_name fixture missing expected failing content"
-        fi
-        ;;
-      fail-evidence)
-        if grep -qE 'AKIA|ghp_|sk-|xox' "$fail_tree/evidence/"* 2>/dev/null; then
-          pass "$tree_name fixture has secret pattern (negative case)"
-        else
-          fail "$tree_name fixture missing expected secret pattern"
-        fi
-        ;;
-      fail-changelog-range)
-        if grep -q 'CM-01 through CM-99' "$fail_tree/"*.md 2>/dev/null; then
-          pass "$tree_name fixture has invalid range claim (negative case)"
-        else
-          fail "$tree_name fixture missing expected failing content"
-        fi
-        ;;
-      *)
-        pass "$tree_name fixture exists"
-        ;;
-    esac
+    
+    # Set up a temp repo with the fail fixture
+    FAIL_TMPDIR=$(mktemp -d)
+    cp -r "$fail_tree"/* "$FAIL_TMPDIR/" 2>/dev/null || true
+    
+    # Add minimal structure for guards to run
+    mkdir -p "$FAIL_TMPDIR/templates" "$FAIL_TMPDIR/scripts" "$FAIL_TMPDIR/docs" "$FAIL_TMPDIR/standards/v1"
+    
+    # Copy base files but let the fixture override with its failing content
+    cp templates/standards-pin.md "$FAIL_TMPDIR/templates/" 2>/dev/null || true
+    cp templates/lens-launch.md "$FAIL_TMPDIR/templates/" 2>/dev/null || true
+    cp scripts/validate-provenance-fixtures.sh "$FAIL_TMPDIR/scripts/" 2>/dev/null || true
+    cp templates/review-provenance.schema.json "$FAIL_TMPDIR/templates/" 2>/dev/null || true
+    
+    # Now copy fixture files on top (they should override and cause failures)
+    cp -r "$fail_tree"/* "$FAIL_TMPDIR/" 2>/dev/null || true
+    
+    # Initialize git
+    (cd "$FAIL_TMPDIR" && git init -q && git add -A && git commit -q -m "test" 2>/dev/null) || true
+    
+    # Run the guard runner - should exit non-zero
+    if scripts/run-factory-guards.sh --root="$FAIL_TMPDIR" >/dev/null 2>&1; then
+      fail "$tree_name: runner exited 0 (should fail)"
+    else
+      pass "$tree_name: runner correctly exits non-zero"
+    fi
+    
+    rm -rf "$FAIL_TMPDIR"
   fi
 done
 
-# Test 6: Provenance fixtures validation passes
+# === PROVENANCE VALIDATION TESTS ===
+echo
+echo "--- Provenance validation ---"
+
+# Test 6: Provenance validator passes
 if scripts/validate-provenance-fixtures.sh >/dev/null 2>&1; then
   pass "validate-provenance-fixtures.sh passes"
 else
@@ -196,16 +169,15 @@ with open(sys.argv[2]) as f:
 
 try:
     Draft202012Validator(schema).validate(data)
-    # Check contradiction
     if "lenses" in data and "overall_verdict" in data:
         all_pass = all(lens.get("verdict") == "PASS" for lens in data["lenses"])
         if data["overall_verdict"] == "PASS" and not all_pass:
-            sys.exit(1)  # Contradiction detected
+            sys.exit(1)
         if data["overall_verdict"] == "CHANGES" and all_pass:
-            sys.exit(1)  # Contradiction detected
-    sys.exit(0)  # Valid - unexpected for this fixture
+            sys.exit(1)
+    sys.exit(0)
 except ValidationError:
-    sys.exit(1)  # Invalid - expected
+    sys.exit(1)
 PYCHECK
   fail "invalid-overall-contradiction.json passed validation (should fail)"
 else
@@ -219,33 +191,106 @@ else
   fail "factory-pin fixture does not quote run-factory-guards.sh"
 fi
 
-# Test 9: Missing-dependency isolation self-test
-# Verify that the validator script has proper dependency checking code
+# === MISSING-DEPENDENCY ISOLATION TESTS ===
 echo
-echo "Testing missing-dependency isolation..."
+echo "--- Missing-dependency isolation (execution) ---"
 
-# Check that validate-provenance-fixtures.sh has fail-closed dependency checks
-if grep -q "python3 not installed" scripts/validate-provenance-fixtures.sh && \
-   grep -q "exit 1" scripts/validate-provenance-fixtures.sh && \
-   grep -q "jsonschema" scripts/validate-provenance-fixtures.sh; then
-  # Verify the script structure: python3 check followed by exit 1
-  if grep -A2 "python3 not installed" scripts/validate-provenance-fixtures.sh | grep -q "exit 1"; then
-    pass "validate-provenance-fixtures.sh has fail-closed python3 check"
+# Create a wrapper that removes a tool from PATH and runs the guard runner
+test_missing_tool() {
+  local tool=$1
+  local tool_path
+  tool_path=$(command -v "$tool")
+  
+  # Create a PATH without the tool's directory
+  local new_path=""
+  local IFS=':'
+  for p in $PATH; do
+    if [ "$p/$tool" != "$tool_path" ] && [ -x "$p/$tool" ] 2>/dev/null; then
+      continue  # Skip this path segment if it contains the tool
+    fi
+    [ -n "$new_path" ] && new_path="$new_path:"
+    new_path="$new_path$p"
+  done
+  
+  # Actually hide the tool by creating a temp dir and symlinking everything except the tool
+  local ISOLATED_PATH=$(mktemp -d)
+  for p in $PATH; do
+    for f in "$p"/*; do
+      [ -x "$f" ] || continue
+      local fname=$(basename "$f")
+      [ "$fname" = "$tool" ] && continue
+      ln -sf "$f" "$ISOLATED_PATH/$fname" 2>/dev/null || true
+    done
+  done
+  
+  # Run guard runner with isolated PATH
+  if PATH="$ISOLATED_PATH" scripts/run-factory-guards.sh >/dev/null 2>&1; then
+    fail "runner exits 0 with $tool hidden (should fail)"
+    rm -rf "$ISOLATED_PATH"
+    return 1
   else
-    fail "validate-provenance-fixtures.sh python3 check does not fail closed"
+    pass "runner correctly fails with $tool hidden"
+    rm -rf "$ISOLATED_PATH"
+    return 0
   fi
-else
-  fail "validate-provenance-fixtures.sh missing dependency checks"
-fi
+}
 
-# Check that run-factory-guards.sh has fail-closed dependency checks
-if grep -q "python3 not installed" scripts/run-factory-guards.sh && \
-   grep -q 'not installed (required)' scripts/run-factory-guards.sh && \
-   grep -q "jsonschema" scripts/run-factory-guards.sh; then
-  pass "run-factory-guards.sh has fail-closed dependency checks"
+# Test each required shell tool
+for tool in grep sed cut find awk; do
+  test_missing_tool "$tool"
+done
+
+# Test missing python3
+echo "Testing python3 isolation..."
+ISOLATED_PATH=$(mktemp -d)
+for p in $PATH; do
+  for f in "$p"/*; do
+    [ -x "$f" ] || continue
+    fname=$(basename "$f")
+    [ "$fname" = "python3" ] && continue
+    [ "$fname" = "python" ] && continue
+    ln -sf "$f" "$ISOLATED_PATH/$fname" 2>/dev/null || true
+  done
+done
+
+if PATH="$ISOLATED_PATH" scripts/run-factory-guards.sh >/dev/null 2>&1; then
+  fail "runner exits 0 with python3 hidden (should fail)"
 else
-  fail "run-factory-guards.sh missing dependency checks"
+  pass "runner correctly fails with python3 hidden"
 fi
+rm -rf "$ISOLATED_PATH"
+
+# Test missing jsonschema (by running in isolated Python environment)
+echo "Testing jsonschema isolation..."
+ISOLATED_PYDIR=$(mktemp -d)
+cat > "$ISOLATED_PYDIR/test_no_jsonschema.py" << 'PYTEST'
+import subprocess
+import sys
+import os
+
+# Run the validator with PYTHONPATH pointing to empty dir to hide jsonschema
+env = os.environ.copy()
+env['PYTHONPATH'] = sys.argv[1]
+
+result = subprocess.run(
+    ['bash', 'scripts/validate-provenance-fixtures.sh'],
+    env=env,
+    capture_output=True,
+    text=True,
+    cwd=sys.argv[2]
+)
+
+# Should exit non-zero due to missing jsonschema
+sys.exit(0 if result.returncode != 0 else 1)
+PYTEST
+
+mkdir -p "$ISOLATED_PYDIR/empty"
+if python3 "$ISOLATED_PYDIR/test_no_jsonschema.py" "$ISOLATED_PYDIR/empty" "$ROOT" 2>/dev/null; then
+  pass "validator correctly fails with jsonschema hidden"
+else
+  fail "validator exits 0 with jsonschema hidden (should fail)"
+fi
+rm -rf "$ISOLATED_PYDIR"
 
 echo
 if [ $FAILED -eq 0 ]; then
