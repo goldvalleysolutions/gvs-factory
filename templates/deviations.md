@@ -21,7 +21,7 @@ This file tracks approved deviations from the standards pinned in `STANDARDS.md`
 
 | Owner | Paths | Rule ID | Reason | Target | Approval |
 |-------|-------|---------|--------|--------|----------|
-| Dev | thoughts/agent-vs-api-call | BL-05 | Legacy article.njk template | Q1 2027 migration | Baselined Nov 2026, migration planned |
+| Dev | thoughts/agent-vs-api-call | BL-05 | Legacy article.njk template | Q1 2027 migration | Baselined Nov 2026 `<link to Mike's approval message or card>` |
 
 ## Closed deviations
 

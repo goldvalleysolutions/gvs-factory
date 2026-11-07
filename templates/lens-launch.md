@@ -6,7 +6,7 @@ _Prompt template for launching a review lens as a new cloud-agent run. Each lens
 
 ## Launch steps
 
-1. **Start a NEW Cursor cloud agent** on the repo at the PR's **base ref** (not the PR branch). This ensures the reviewer has no access to the PR branch name or head commits in its default checkout.
+1. **Start a NEW Cursor cloud agent** on the repo at a detached HEAD at the PR's base SHA `<base_sha>` (an exact commit, never a branch name). This ensures the reviewer has no access to the PR branch name or head commits in its default checkout.
 
 2. **Attach the sanitized bundle** as files:
    - The diff as a patch file: `gh api -H "Accept: application/vnd.github.v3.diff" repos/{owner}/{repo}/compare/{base}...{head} > bundle.diff`
@@ -108,7 +108,7 @@ Only include profiles declared in the repo's STANDARDS.md. Then append each decl
 
 _For the orchestrator launching lens runs:_
 
-1. Launch each lens as a **NEW cloud-agent** on the repo at the PR's **base ref**, not a reply or continued session.
+1. Launch each lens as a **NEW cloud-agent** on the repo at a detached HEAD at the PR's base SHA `<base_sha>` (an exact commit, never a branch name), not a reply or continued session.
 2. All five lenses get the same sanitized bundle.
 3. Do not include prior findings in any lens input.
 4. Wait for all five verdicts before combining.

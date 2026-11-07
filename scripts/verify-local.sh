@@ -225,6 +225,11 @@ SEMGREP_CONFIG=${SEMGREP_CONFIG:-p/ci}
 if have semgrep; then run . "semgrep scan --config $SEMGREP_CONFIG --error" semgrep scan --config "$SEMGREP_CONFIG" --error --quiet --metrics=off --disable-version-check
 else missing semgrep; fi
 
+# Provenance schema fixture validation (if fixtures exist)
+if [ -d "$ROOT/tests/fixtures/provenance" ] && [ -f "$ROOT/scripts/validate-provenance-fixtures.sh" ]; then
+  run . "provenance schema fixtures" "$ROOT/scripts/validate-provenance-fixtures.sh"
+fi
+
 [ $DIRTY -eq 1 ] && FAILED=1
 
 cat <<OUT

@@ -83,6 +83,53 @@
       "description": "Overall verdict: PASS if all lenses pass, CHANGES if any lens requires changes"
     }
   },
+  "allOf": [
+    {
+      "properties": {
+        "lenses": {
+          "contains": { "properties": { "lens": { "const": "Security" } }, "required": ["lens"] },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    {
+      "properties": {
+        "lenses": {
+          "contains": { "properties": { "lens": { "const": "Code" } }, "required": ["lens"] },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    {
+      "properties": {
+        "lenses": {
+          "contains": { "properties": { "lens": { "const": "Tests and evals" } }, "required": ["lens"] },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    {
+      "properties": {
+        "lenses": {
+          "contains": { "properties": { "lens": { "const": "UX" } }, "required": ["lens"] },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    {
+      "properties": {
+        "lenses": {
+          "contains": { "properties": { "lens": { "const": "Consistency" } }, "required": ["lens"] },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    }
+  ],
   "$defs": {
     "lens_record": {
       "type": "object",
