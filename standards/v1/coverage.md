@@ -7,52 +7,81 @@ This document lists the active GVS frontends to check for consistency review. Pr
 
 ## Access notes
 
-**Nov 7, 2026:** Attempted to verify repos via GitHub API and git clone. The following repos were NOT accessible to the current authentication:
-- `goldvalleysolutions/gvs-core-bot` — referenced in bot READMEs at commits `1c6e619` (inbox-triage) and `a04a736` (manuals-expert)
-- `goldvalleysolutions/www.goldvalleysolutions.com` — referenced in Marketing sources S5/S6
-
-Verification below is based on accessible repos only. Items marked "Verified" were read from the repos. Items marked "Access pending" require access to the private repos.
+**Nov 7, 2026:** Verification status:
+- `goldvalleysolutions/gvs-core-bot` — **Verified** via separate read-only run at `test` ref commit `e4b0f3a`
+- `goldvalleysolutions/gvs-inbox-triage-bot` — Verified via GitHub API at `main`
+- `goldvalleysolutions/gvs-manuals-expert-bot` — Verified via GitHub API at `main`
+- `goldvalleysolutions/www.goldvalleysolutions.com` — Access pending (not accessible to current auth)
 
 ---
 
 ## Bot frontends
 
-### Core Bot (access pending)
+### Core Bot (verified)
 
 | Field | Value | Source |
 |-------|-------|--------|
-| **Repo** | `goldvalleysolutions/gvs-core-bot` | Bot READMEs reference `git clone https://github.com/goldvalleysolutions/gvs-core-bot.git` |
-| **Ref** | `test` | User instruction |
-| **Docker Hub** | `goldvalleysolutions/core-bot:0.3` | Verified from `gvs-inbox-triage-bot/bot/Dockerfile` |
+| **Repo** | `goldvalleysolutions/gvs-core-bot` | Verified via read-only run |
+| **Ref** | `test` commit `e4b0f3a` | Verified Nov 7, 2026 |
+| **Docker Hub** | `goldvalleysolutions/core-bot:0.3` | Verified from child bot Dockerfiles |
 | **Profile** | `profile-bot`, `brand` | — |
 | **Style owner** | Marketing | — |
 | **Architecture owner** | Dev | — |
-| **Status** | Access pending — repo not accessible to current auth | Attempted Nov 7, 2026 |
+| **Status** | Verified Nov 7, 2026 | — |
 
-**Routes (inferred from child bots):**
-
-Routes are inherited by child bots. Based on patterns observed in accessible bot repos:
+**Routes (verified from `gvs-core-bot@e4b0f3a`):**
 
 | Route | Purpose | Source |
 |-------|---------|--------|
-| `/` | Home/chat page | Verified: `gvs-inbox-triage-bot/tests/e2e/test_inbox_triage.py` |
-| `/setup` | Setup wizard | Verified: `gvs-inbox-triage-bot/tests/e2e/ui.py` |
-| `/health` | Health check | Verified: `gvs-manuals-expert-bot/tests/e2e/test_manuals_expert.py` |
-| `/admin` | Admin panel | Verified: `gvs-inbox-triage-bot/tests/e2e/ui.py` |
-| `/admin/login` | Admin login | Verified: `gvs-inbox-triage-bot/tests/e2e/ui.py` |
-| `/login` | User login | Verified: `gvs-manuals-expert-bot/bot/README.md` |
-| `/mcp/` | MCP endpoint (when enabled) | Verified: `gvs-inbox-triage-bot/tests/e2e/ui.py` |
-| `/r/<bot-slug>/` | Bot-specific pages | Verified: child bot implementations |
+| `/` | Home/chat page | `core/app.py` |
+| `/health` | Health check | `core/app.py` |
+| `/login` | User login | `core/app.py` |
+| `/logout` | User logout | `core/app.py` |
+| `/chat/approvals/{aid}` | Approval handling | `core/app.py` |
+| `/chat/delete` | Chat deletion | `core/app.py` |
+| `/static/*` | Static assets | `core/app.py` |
+| `/setup` | Setup wizard | `core/setup/routes.py` |
+| `/setup/test` | Setup test endpoint | `core/setup/routes.py` |
+| `/setup/models` | Model selection | `core/setup/routes.py` |
+| `/admin` | Admin panel | `core/admin/*.py` |
+| `/admin/mcp` | MCP admin + token routes | `core/admin/*.py` |
+| `/admin/users` | User management | `core/admin/*.py` |
+| `/admin/retention` | Data retention | `core/admin/*.py` |
+| `/admin/settings` | Settings panel | `core/admin/*.py` |
+| `/gvs/*` | GVS-only routes | `core/app.py` |
+| `/mcp` | MCP endpoint (when enabled) | `core/mcp/server.py` line 140 |
+| `/r/<slug>/` | Bot add-on pages | `core/sdk/service.py` |
 
-**Setup wizard steps (from `ui.py`):**
-- `bot_admin` — create admin password
-- `access` — who can use the bot (policy: anyone, signed_in)
-- `model` — AI model selection
-- `connectors` — mail/SMTP config (bot-specific)
-- `wizard` — bot-specific wizard (optional)
-- `self_test` — run self-test
+**Admin tabs (verified from `core/admin/settings.py` `tab_button()`):**
+- Bot
+- Model
+- Email (conditional)
+- Users
+- MCP (Advanced)
+- Data (Advanced)
 
-**UI reference paths:** Access pending. Child bots inherit from core via Docker `FROM`.
+**Tab styling (verified from `core/ui/gvs.css` lines 326-363):**
+- Connected strip with shared baseline
+- Gold underline on active tab
+- Scrolls sideways, does not wrap
+
+**No API page (verified from `core/app.py` lines 210-214):**
+- OpenAPI disabled
+- `/docs` disabled
+- `/redoc` disabled
+
+**UI reference paths (verified from `gvs-core-bot@e4b0f3a`):**
+
+| Component | Path | Purpose |
+|-----------|------|---------|
+| Shared CSS | `core/ui/gvs.css` | GVS styling including tabs |
+| Page builder | `core/ui/html.py` `page()` | HTML page generation |
+| Theme | `core/ui/theme.py` | Merges `/bot/theme.yaml` |
+| Chat UI | `core/ui/chat.py` | Chat interface |
+| Approvals UI | `core/ui/approvals.py` | Approval cards |
+| Client JS | `core/ui/bot.js` | Client-side JavaScript |
+| Fonts | `core/ui/fonts/` | Inter font files (locally served) |
+| Brand assets | `core/ui/brand/` | Logo and brand assets |
 
 ---
 
@@ -208,8 +237,7 @@ A rule authored by Marketing does not override Dev's architecture decisions. A r
 
 ## Inventory gaps
 
-1. **Core-bot source access:** `goldvalleysolutions/gvs-core-bot` not accessible — UI patterns inferred from child bots
-2. **Website source access:** `goldvalleysolutions/www.goldvalleysolutions.com` not accessible — routes from Marketing sources unverified
-3. **Website SHA pin:** Ref is mutable `test`. Pin SHA before enforcement.
-4. **Role/state screenshots:** Reference screenshots per page family and role/state not captured
-5. **Release records:** Bot release status needs explicit source evidence
+1. **Website source access:** `goldvalleysolutions/www.goldvalleysolutions.com` not accessible — routes from Marketing sources unverified
+2. **Website SHA pin:** Ref is mutable `test`. Pin SHA before enforcement.
+3. **Role/state screenshots:** Reference screenshots per page family and role/state not captured
+4. **Release records:** Bot release status needs explicit source evidence

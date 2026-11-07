@@ -33,44 +33,48 @@ Bot repos include `theme.yaml` with minimal overrides. Default theme from core: 
 
 **Reference:** `gvs-inbox-triage-bot/bot/theme.yaml`, `gvs-manuals-expert-bot/bot/theme.yaml`
 
-### BOT-08 Bot tabs and API page [PROPOSED: observed conflict, S4a is stale]
+### BOT-08 Bot tabs and API page [PROPOSED: verified from core source, S4a is stale]
 
 **Issue:** Historical documentation snapshots disagreed on bot tab styling and API page presence.
 
 **Evidence from documentation:**
 - S4a (`/workspace/orgs/dev-team/standards/gvs-ui-style-guide.md`, Oct 29): wrapped bordered tabs with API page — **STALE**
 - S4b (`/workspace/orgs/gold-valley/work/dev/inbox-triage-0.2/core-pr42-rework/docs/gvs-ui-style-guide.md`, Oct 30): connected tabs, no API page, lines 381-407 state "Updated 2026-10-30 (Mike)"
-- S4b checklist line 462 contradicts the "no API" statement (internal inconsistency)
+- S4b checklist line 462 contradicts the "no API" statement (internal inconsistency in S4b)
 
-**Resolution from accessible bot repos:**
+**Resolution from core-bot source (verified `gvs-core-bot@e4b0f3a` Nov 7, 2026):**
 
-Attempted verification of `goldvalleysolutions/gvs-core-bot` at ref `test` on Nov 7, 2026 — repo not accessible to current auth. Child bots (`gvs-inbox-triage-bot`, `gvs-manuals-expert-bot`) were verified.
+**Tab styling** — `core/ui/gvs.css` lines 326-363:
+- Connected strip with a shared baseline
+- Gold underline on active tab
+- Scrolls sideways and does not wrap
 
-From `gvs-manuals-expert-bot/bot/README.md`:
-- Admin section lists "Bot admin (you)" and "GVS operator" columns with capabilities
-- No API page mentioned in routes
-- Routes verified: `/`, `/setup`, `/health`, `/admin`, `/r/manuals-expert/`, `/r/manuals-expert/search`, `/mcp/`
+**Admin tabs** — `core/admin/settings.py` `tab_button()`:
+- Bot, Model, Email (conditional), Users, MCP (Advanced), Data (Advanced)
 
-From `gvs-inbox-triage-bot/bot/README.md`:
-- Admin section same structure
-- No separate API page — MCP endpoint is `/mcp/` when enabled
-- Routes verified: `/`, `/setup`, `/health`, `/admin`, `/r/inbox-triage/brief`, `/mcp/`
+**No API page** — `core/app.py` lines 210-214:
+- OpenAPI disabled
+- `/docs` disabled
+- `/redoc` disabled
 
-**Conclusion:** S4b (Oct 30) appears to be the current state based on accessible child bots. S4a (Oct 29) is stale. The API page has been replaced by the MCP endpoint at `/mcp/`. Tab styling could not be directly verified without core-bot source access.
+**MCP endpoint** — `core/mcp/server.py` line 140:
+- Mounted at `/mcp` (not `/mcp/`)
 
-**Rule as observed:** Bot admin UI uses connected tabs (per S4b). There is no separate API page; MCP functionality is exposed at `/mcp/` when the bot admin enables it.
+**Conclusion:** S4b is confirmed as current. S4a is stale. The implementation uses connected tabs with gold underline, no API page (OpenAPI/docs/redoc disabled), and MCP functionality at `/mcp`.
 
-**Status:** [PROPOSED: needs Mike] — S4a is stale, S4b is current direction. Full verification requires core-bot source access.
+**Rule as observed:** Bot admin UI uses connected tabs with a shared baseline and gold underline on the active tab. Tabs scroll sideways and do not wrap. There is no API page (OpenAPI, docs, redoc are disabled). MCP functionality is exposed at `/mcp` when the bot admin enables it.
+
+**Status:** [PROPOSED: needs Mike] — implementation verified, rule needs Mike's approval to become blocking.
 
 ## Reference paths
 
-Verified from accessible bot repositories on Nov 7, 2026:
+Verified from bot repositories on Nov 7, 2026:
 
 | Repo | Ref | Pattern files | Status |
 |------|-----|---------------|--------|
+| `goldvalleysolutions/gvs-core-bot` | `test` `e4b0f3a` | `core/ui/gvs.css`, `core/ui/html.py`, `core/ui/theme.py`, `core/ui/chat.py`, `core/ui/approvals.py`, `core/ui/bot.js`, `core/ui/fonts/`, `core/ui/brand/`, `core/admin/settings.py`, `core/mcp/server.py` | Verified |
 | `goldvalleysolutions/gvs-inbox-triage-bot` | `main` | `bot/Dockerfile`, `bot/bot.yaml`, `bot/theme.yaml`, `bot/role.md`, `bot/tools/`, `bot/skills/`, `bot/services/brief.py` | Verified |
 | `goldvalleysolutions/gvs-manuals-expert-bot` | `main` | `bot/Dockerfile`, `bot/bot.yaml`, `bot/theme.yaml`, `bot/role.md`, `bot/tools/search.py`, `bot/services/search.py` | Verified |
-| `goldvalleysolutions/gvs-core-bot` | `test` | Source repo — attempted Nov 7 | Access pending |
 | `goldvalleysolutions/core-bot` (Docker Hub) | `0.3` | Base image pinned by child bots | Image exists |
 
 ## Known gaps
@@ -78,8 +82,8 @@ Verified from accessible bot repositories on Nov 7, 2026:
 ### BOT-GAP-01 Resident Front Desk deviation [APPROVED: bot-architecture.md, Mike Nov 1 2026]
 Resident Front Desk is an 8-container compose stack that does not yet meet these rules. It must be rebuilt to comply. This is tracked debt, not an exception. Front Desk implementation is held from this review scope.
 
-### BOT-GAP-02 Core source access
-The `goldvalleysolutions/gvs-core-bot` source repository at ref `test` was not accessible to the verification run on Nov 7, 2026. UI patterns are inferred from child bot repos (`gvs-inbox-triage-bot`, `gvs-manuals-expert-bot`) that inherit from it via `FROM goldvalleysolutions/core-bot:0.3`, and from historical documentation (S4a stale, S4b current). Direct core source verification requires repo access.
+### BOT-GAP-02 Core source verified
+The `goldvalleysolutions/gvs-core-bot` source repository was verified via separate read-only run at `test` ref commit `e4b0f3a` on Nov 7, 2026. UI patterns confirmed: connected tabs with gold underline (`core/ui/gvs.css` lines 326-363), no API page (`core/app.py` lines 210-214), MCP at `/mcp` (`core/mcp/server.py` line 140). S4b is confirmed current; S4a is stale.
 
 ## Verification
 
