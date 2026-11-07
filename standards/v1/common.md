@@ -61,3 +61,13 @@ Reviews use five independent lenses: Security, Code, Tests and evals, UX, and Co
 
 ### CM-16 Consistency lens blocking [APPROVED: Mike, direct, Nov 2026]
 The Consistency lens (Lens 5) is BLOCKING from day one. It checks the change against the pinned standards version and all applicable profiles. Violations of [APPROVED] rules are CHANGES with the rule ID cited. Violations of [PROPOSED] rules go under Notes, not Findings.
+
+### CM-17 Pre-panel factory guards [PROPOSED: Mike directed upfront factory checks Nov 7 2026; rule text not separately approved]
+Before a review panel launches, the developer runs the guard runner from the pinned factory version (`scripts/run-factory-guards.sh`). Required guards fail closed if a dependency is missing (exit non-zero, never skip as success). Local verification that records PASS for a required check that did not run is invalid.
+
+**Profile scoping for guards:**
+- **common** (always): fail-closed runner, canonical lens names, approval-tag lint, citation existence, evidence-scrub instructions, terminology sweep.
+- **deviations / blog baselines** (when `DEVIATIONS.md` exists or `blog.md` is declared): target and approval columns.
+- **review provenance** (factory and any repo that writes `review/*-round*.json`): schema plus self-tests.
+- **profile-bot**: architecture-source citations in bot standards must resolve.
+- **profile-web / blog**: included in canonical-name and example-completeness checks; no extra product-repo edits.

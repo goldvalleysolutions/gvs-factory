@@ -13,7 +13,7 @@ Every lens receives exactly the same bundle, with no builder commentary or prior
 1. **Diff** — the patch file between base and head SHAs.
 2. **Acceptance criteria** — the spec's checklist with the evidence run results attached (pass/fail per item).
 3. **Standards** — the pinned standards version and all applicable profiles from the repo's STANDARDS.md, plus any declared reference files.
-4. **Evidence pack** — raw `verify-local.sh` output and screenshots from the evidence run at the head SHA. No builder report, no developer commentary, no previous reviewer findings or conclusions.
+4. **Evidence pack** — scrubbed `verify-local.sh` output and screenshots from the evidence run at the head SHA. Secrets, tokens, `.env` values, and personal data must be redacted before attaching. No builder report, no developer commentary, no previous reviewer findings or conclusions.
 5. **Lens instructions** — only the instructions for that lens (below).
 
 In rounds 2 and 3, reviewers get a fresh bundle for the new head. Prior findings are used only by the orchestrator after verdicts are in, to check closure. No reviewer sees them.

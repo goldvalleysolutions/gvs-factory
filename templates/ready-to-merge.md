@@ -17,7 +17,7 @@ Example:
 ---
 Rules:
 - Cite only reviewer or Local verification evidence, never the builder's self-report.
-- The Local verification block must be on the exact head. No stacked pull requests.
+- The Local verification block must be on the exact head. No stacked pull requests. Local verification includes the factory guards (`scripts/run-factory-guards.sh`).
 - All five lenses (Security, Code, Tests and evals, UX, Consistency) must PASS.
 - Every lens launched at the exact base SHA (not a branch name).
 - Log, outside this note: agent hours, coding-agent runs and model per role, and the human's review time.

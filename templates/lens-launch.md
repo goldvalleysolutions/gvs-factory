@@ -17,19 +17,21 @@ _Prompt template for launching a review lens as a new cloud-agent run. Each lens
 
    **How to attach:** Save each bundle file on the orchestrator's machine. Pass them in the CloudAgent launch `files` parameter as `file://` URLs. The agent finds them under `uploads/`. Never paste the diff into the PR or the prompt.
 
+   **Evidence scrubbing:** Before attaching the evidence pack, redact secrets, tokens, `.env` values, and personal data from command output and screenshots. Manual screenshot review is still required.
+
 3. **Use this prompt template** with the lens-specific instructions.
 
 4. **Record provenance** in the project repo's `review/<pr_number>-round<round_number>.json`:
    - Agent ID and URL
    - Requested model (from the launch)
    - Reported model (from platform; may be "not reported")
-   - Head SHA and standards version
+   - Head SHA, base SHA, and standards version
 
 ---
 
-## Lens <lens_number>: <Lens name>
+## Lens <lens_number> · <Lens name>
 
-You are a reviewer running Lens <lens_number> (<lens name>) for PR #<pr_number> in <repo>, round <round_number>.
+You are a reviewer running Lens <lens_number> (<lens name>) for base `<base_sha>` to head `<head_sha>` in <repo>, round <round_number>.
 
 **This is a review-only run. Do not read the PR body, comments, or commit messages. Do not run git log. Judge only what is in the attached bundle.**
 
@@ -37,10 +39,10 @@ You are a reviewer running Lens <lens_number> (<lens name>) for PR #<pr_number> 
 
 You have been given exactly these inputs (see `docs/process.md` section "Reviewer inputs" for the full definition):
 
-1. **Diff** — the patch file between base SHA `<base>` and head SHA `<head>`.
+1. **Diff** — the patch file between base SHA `<base_sha>` and head SHA `<head_sha>`.
 2. **Acceptance criteria** — the spec's checklist with evidence run results attached (pass/fail per item).
 3. **Standards** — the full text of `common.md` plus each declared profile from the repo's STANDARDS.md, concatenated with file headers (e.g., `--- common.md ---`).
-4. **Evidence pack** — raw `verify-local.sh` output and screenshots from the evidence run at head SHA. No builder report, no developer commentary, no previous reviewer findings.
+4. **Evidence pack** — scrubbed `verify-local.sh` output and screenshots from the evidence run at head SHA. No builder report, no developer commentary, no previous reviewer findings.
 5. **These instructions** — only the instructions for this lens.
 
 You do NOT have:
@@ -62,9 +64,7 @@ You do NOT have:
 
 ### Lens-specific instructions
 
-Paste the italic paragraph under the matching ## Lens N · <name> heading in templates/review.md.
-
-For Lens 5 (Consistency), see `templates/review.md` section "Lens 5 · Consistency".
+Paste only the italic paragraph under the matching `## Lens N · <name>` heading in `templates/review.md`. Do not paste other lenses or extra sections.
 
 ### Output format
 
@@ -96,8 +96,14 @@ The standards input is the full text of `common.md` plus each declared profile, 
 --- profile-bot.md ---
 <full text of profile-bot.md, if declared>
 
+--- profile-web.md ---
+<full text of profile-web.md, if declared>
+
 --- brand.md ---
 <full text of brand.md, if declared>
+
+--- blog.md ---
+<full text of blog.md, if declared>
 ```
 
 Only include profiles declared in the repo's STANDARDS.md. Then append each declared reference file, each preceded by a `--- <path> ---` header line.

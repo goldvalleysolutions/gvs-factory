@@ -4,7 +4,7 @@
   "title": "Review Provenance",
   "description": "Provenance record for a review round. Saved as review/<pr_number>-round<round_number>.json.",
   "type": "object",
-  "required": ["pr", "round", "head_sha", "standards_version", "lenses", "timestamp"],
+  "required": ["pr", "round", "head_sha", "base_sha", "standards_version", "lenses", "timestamp", "overall_verdict"],
   "properties": {
     "pr": {
       "type": "integer",

@@ -1,0 +1,16 @@
+## Local verification
+
+- Repo: test-repo
+- Branch: feature/test
+- Head SHA: abc123
+
+| Command | Result | Duration |
+|---|---|---|
+| `npm test` | PASS | 5s |
+
+AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+Overall: PASS
+
+This fixture should FAIL the evidence-secrets guard because it contains fake AWS credentials.

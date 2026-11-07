@@ -10,7 +10,7 @@ This repository follows the Gold Valley Solutions software factory standards.
 
 **Standards version:** v1.0.0
 **Pinned date:** <YYYY-MM-DD>
-**Source:** https://github.com/goldvalleysolutions/gvs-factory/tree/test/standards/v1
+**Source:** https://github.com/goldvalleysolutions/gvs-factory/tree/<pinned-tag-or-sha>/standards/v1
 
 **Immutability:** The factory's `standards/v1/` folder is immutable once released; changes go in `v2/`.
 
@@ -18,7 +18,7 @@ This repository follows the Gold Valley Solutions software factory standards.
 
 _Check all that apply. Each profile adds its rules to this repo's consistency review._
 
-- `common.md` — always included (applies to all repos)
+- [x] `common.md` — always included (applies to all repos)
 - [ ] `profile-bot.md` — bot repositories only
 - [ ] `profile-web.md` — web frontend repositories only
 - [ ] `brand.md` — repos with user-facing visual interfaces (DRAFT — only [APPROVED] rules enforced)
@@ -53,6 +53,20 @@ _Add any rules specific to this repo that are not in the factory standards. Each
 | ID | Rule | Source |
 |----|------|--------|
 | | | |
+
+## Pre-review verification
+
+Before launching a review panel, run the factory guards from the pinned version:
+
+```bash
+# From gvs-factory at the pinned tag or commit:
+scripts/run-factory-guards.sh
+
+# Or via verify-local which includes the guards:
+scripts/verify-local.sh
+```
+
+Required guards fail closed: missing dependencies (python3, jsonschema>=4.18) are FAIL, never SKIP. See `templates/pre-panel-checklist.md` for the full developer checklist.
 
 ## Deviations
 

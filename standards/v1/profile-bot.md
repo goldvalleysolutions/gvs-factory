@@ -6,7 +6,7 @@ Profiles: Applies to bot repositories only. Repos declare this profile in their 
 
 These rules apply to Gold Valley Solutions bot repos (core, manuals-expert, inbox-triage, and any future bots). Web frontends use profile-web.md. **Bots do NOT inherit website layout.**
 
-## Architecture rules [APPROVED: bot-architecture.md, Mike Nov 1 2026]
+## Architecture rules [APPROVED: docs/bot-architecture.md, Mike Nov 1 2026]
 
 ### BOT-01 One image per bot
 Each bot ships as a single Docker Hub image. No compose file, no sidecar services, no separate database server, no complex config.
@@ -79,7 +79,7 @@ Verified from bot repositories on Nov 7, 2026:
 
 ## Known gaps
 
-### BOT-GAP-01 Resident Front Desk deviation [APPROVED: bot-architecture.md, Mike Nov 1 2026]
+### BOT-GAP-01 Resident Front Desk deviation [APPROVED: docs/bot-architecture.md, Mike Nov 1 2026]
 Resident Front Desk is an 8-container compose stack that does not yet meet these rules. It must be rebuilt to comply. This is tracked debt, not an exception. Front Desk implementation is held from this review scope.
 
 ### BOT-GAP-02 Core source verified

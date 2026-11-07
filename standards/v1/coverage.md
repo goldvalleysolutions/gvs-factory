@@ -3,6 +3,8 @@
 Version: v1.0.0
 Effective: 2026-11-07
 
+**Warning:** This file lists internal admin routes and source paths. It is an always-flagged public-exposure item if the repository is made public (see `docs/process.md` section 7).
+
 This document lists the active GVS frontends to check for consistency review. Profile ownership: Marketing owns style and brand rules; Dev owns architecture and code rules.
 
 ## Access notes
@@ -271,7 +273,7 @@ This document lists the active GVS frontends to check for consistency review. Pr
 | Field | Value | Source |
 |-------|-------|--------|
 | **Status** | Implementation held | BOT-GAP-01 in profile-bot.md |
-| **Reason** | 8-container compose stack, does not meet BOT-01 through BOT-05 | bot-architecture.md |
+| **Reason** | 8-container compose stack, does not meet BOT-01 through BOT-05 | docs/bot-architecture.md |
 
 Excluded from consistency review until rebuilt to meet architecture rules.
 

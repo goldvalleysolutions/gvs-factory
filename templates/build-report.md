@@ -37,6 +37,7 @@ Files changed:
 | `<lint command>` | pass / fail |
 | `<format check command>` | pass / fail |
 | `<test command>` | pass / fail (<n> passed) |
+| `scripts/run-factory-guards.sh` | pass / fail (paste output) |
 
 ## Always-flagged items
 <!-- List every always-flagged item this branch touches, with the file and one line on why. "None" only if truly none. -->

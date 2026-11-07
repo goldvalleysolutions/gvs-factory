@@ -6,13 +6,14 @@ All notable changes to the versioned standards are documented in this file.
 
 ### Added
 
-- `common.md` — rules that apply to all repos (CM-01 through CM-16)
+- `common.md` — rules that apply to all repos (CM-01 through CM-17)
   - Code patterns: no secrets, docs updated, one change per PR, local verification, evidence over self-report, three-round cap, human owns main, always-flagged items
   - Testing: Playwright e2e, new behaviour needs tests, no network/paid calls in tests
   - Process: testable acceptance criteria, scope held, flags named
+  - Review: five independent lenses, consistency lens blocking, pre-panel factory guards [PROPOSED]
 
 - `profile-bot.md` — rules for bot repositories (BOT-01 through BOT-08)
-  - Architecture: one image per bot, pull and run, built on Core, Core + job layer, same shape everywhere [APPROVED: bot-architecture.md, Mike Nov 1 2026]
+  - Architecture: one image per bot, pull and run, built on Core, Core + job layer, same shape everywhere [APPROVED: docs/bot-architecture.md, Mike Nov 1 2026]
   - UI: task-oriented shell not marketing layout, theme inheritance [PROPOSED]
   - Conflict documented: BOT-08 tab/API guidance awaiting Developer verification
   - Known gaps: Front Desk deviation, core source access
