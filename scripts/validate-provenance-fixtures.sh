@@ -17,7 +17,7 @@ if ! command -v python3 >/dev/null 2>&1; then
 fi
 
 # Check jsonschema with actual minContains/maxContains capability probe - FAIL if missing or incapable
-if ! python3 << 'PYCHECK' 2>/dev/null; then
+python3 << 'PYCHECK' 2>/dev/null
 import sys
 try:
     import jsonschema
@@ -59,7 +59,8 @@ except Exception as e:
     sys.exit(1)
 sys.exit(0)
 PYCHECK
-then
+
+if [ $? -ne 0 ]; then
   echo "FAIL: jsonschema>=4.18 with minContains/maxContains support required"
   exit 1
 fi

@@ -1,0 +1,10 @@
+# gitleaks configuration
+# Allow known test fixtures with example/fake credentials
+
+[allowlist]
+  description = "Test fixtures with documented example credentials"
+  
+  # Test fixture for evidence-secrets guard
+  paths = [
+    '''tests/fixtures/factory-guards/fail-evidence/evidence/verify-local\.log'''
+  ]

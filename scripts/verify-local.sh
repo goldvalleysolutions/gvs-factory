@@ -219,7 +219,7 @@ if [ -n "${COMPOSE+x}" ]; then
 fi
 
 # Repo-wide security scans
-if have gitleaks; then run . "gitleaks dir ." gitleaks dir . --redact --no-banner; else missing gitleaks; fi
+if have gitleaks; then run . "gitleaks detect" gitleaks detect --source . --redact --no-banner; else missing gitleaks; fi
 # Semgrep free registry rules. p/ci works with metrics off (--config auto requires metrics on).
 SEMGREP_CONFIG=${SEMGREP_CONFIG:-p/ci}
 if have semgrep; then run . "semgrep scan --config $SEMGREP_CONFIG --error" semgrep scan --config "$SEMGREP_CONFIG" --error --quiet --metrics=off --disable-version-check

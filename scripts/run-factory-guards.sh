@@ -222,24 +222,27 @@ guard_deviation_fields() {
         fi
         # Process data rows
         if [ $in_table -eq 1 ] && echo "$line" | grep -Eq '^\|'; then
-          # Skip completely empty placeholder rows
-          if echo "$line" | grep -Eq '^\|[[:space:]]*\|[[:space:]]*\|[[:space:]]*\|[[:space:]]*\|[[:space:]]*\|[[:space:]]*\|[[:space:]]*\|$'; then
+          # Parse columns: | Owner | Paths | Rule ID | Reason | Target | Approval |
+          local owner=$(echo "$line" | awk -F'|' '{print $2}' | xargs 2>/dev/null || true)
+          local paths=$(echo "$line" | awk -F'|' '{print $3}' | xargs 2>/dev/null || true)
+          local ruleid=$(echo "$line" | awk -F'|' '{print $4}' | xargs 2>/dev/null || true)
+          local approval=$(echo "$line" | awk -F'|' '{print $(NF-1)}' | xargs 2>/dev/null || true)
+          
+          # Skip placeholder rows (templates have <name> or empty owner)
+          if [ -z "$owner" ] || [[ "$owner" == "<"* ]]; then
             continue
           fi
+          
           # Check for "To be migrated" without plan
           if echo "$line" | grep -qi "to be migrated" && ! echo "$line" | grep -qi "plan"; then
             fail "deviation-fields: '$f' has 'To be migrated' without plan"
             found=1
           fi
-          # Parse columns: | Owner | Paths | Rule ID | Reason | Target | Approval |
-          local approval=$(echo "$line" | awk -F'|' '{print $(NF-1)}' | xargs 2>/dev/null || true)
+          
+          # Check for empty Approval column on real data rows
           if [ -z "$approval" ]; then
-            # Check if this looks like a real data row (has content in other columns)
-            local owner=$(echo "$line" | awk -F'|' '{print $2}' | xargs 2>/dev/null || true)
-            if [ -n "$owner" ]; then
-              fail "deviation-fields: '$f' has empty Approval column"
-              found=1
-            fi
+            fail "deviation-fields: '$f' has empty Approval column for owner '$owner'"
+            found=1
           fi
         fi
         # End of table
