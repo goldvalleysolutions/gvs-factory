@@ -40,11 +40,18 @@ _Move entries here when the deviation is resolved._
 5. **Baselines are not waivers.** They prevent new drift and track debt.
 6. **Paths must be specific.** Use exact file paths or patterns (e.g., `thoughts/*.md`), not "various files".
 
+## How to get Mike's approval
+
+1. **Send the request** to Dev · Product Manager.
+2. **The PM puts a card** in the HQ "Needs Mike" list on Trello with the rule ID, paths, reason, and proposed target.
+3. **Wait for Mike's reply.** The approval reference is a link to Mike's own reply on that card.
+4. **No fallback.** If Mike hasn't answered, the deviation is not approved, and the PR does not merge on that rule. Do not assume silence is approval.
+
 ## Adding a deviation
 
 1. Identify the rule ID being deviated from (check STANDARDS.md profiles).
-2. Get Mike's approval for the deviation.
-3. Add an entry with all required fields.
+2. Get Mike's approval using the process above.
+3. Add an entry with all required fields, including the link to Mike's reply.
 4. Open a PR to update this file.
 
 ## Reviewing deviations

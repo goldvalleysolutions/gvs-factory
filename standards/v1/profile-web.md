@@ -1,6 +1,6 @@
-# Web profile · v1
+# Web profile · v1.0.0
 
-Version: 1.0.0
+Version: v1.0.0
 Effective: 2026-11-07
 Profiles: Applies to web frontend repositories (website, marketing pages). Repos declare this profile in their STANDARDS.md.
 
@@ -11,8 +11,8 @@ These rules apply to Gold Valley Solutions web frontends. **Bot repositories use
 ### WEB-01 Rulebook location [APPROVED: Mike, direct, Nov 2026]
 The standards rulebook lives in `gvs-factory/standards`. Project repos pin a version and declare applicable profiles in their STANDARDS.md.
 
-### WEB-02 Five independent review lenses [APPROVED: Mike, direct, Nov 2026]
-Reviews use five independent lenses: Security, Code, Tests, UX, and Consistency. Each lens runs as a separate cloud-agent launch with the sanitized bundle.
+### WEB-02 Five independent review lenses [APPROVED: references CM-15]
+Reviews use five independent lenses: Security, Code, Tests and evals, UX, and Consistency. Each lens runs as a separate cloud-agent launch with the sanitized bundle. See CM-15 for the canonical rule.
 
 ## Candidate rules (non-blocking, under review)
 

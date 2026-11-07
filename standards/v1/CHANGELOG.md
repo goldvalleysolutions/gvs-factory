@@ -2,11 +2,11 @@
 
 All notable changes to the versioned standards are documented in this file.
 
-## [1.0.0] - 2026-11-07
+## [v1.0.0] - 2026-11-07
 
 ### Added
 
-- `common.md` — rules that apply to all repos (CM-01 through CM-14)
+- `common.md` — rules that apply to all repos (CM-01 through CM-16)
   - Code patterns: no secrets, docs updated, one change per PR, local verification, evidence over self-report, three-round cap, human owns main, always-flagged items
   - Testing: Playwright e2e, new behaviour needs tests, no network/paid calls in tests
   - Process: testable acceptance criteria, scope held, flags named
@@ -24,13 +24,13 @@ All notable changes to the versioned standards are documented in this file.
   - Website families: WEB-MARKETING, WEB-BLOG-CLASSIC, WEB-BLOG-ENGINEERING, HOMEPAGE, TRAINING
   - **Web profile does NOT apply to bots**
 
-- `brand.md` — DRAFT/NOT ENFORCED
-  - [APPROVED]: Let's Talk placement (BR-01), contact scope (BR-02), pricing/rates (BR-03), diagram style (BR-04), no Professor (BR-05)
-  - [PROPOSED]: dash characters (BR-06, internal constraint not enforced), palette (BR-07), fonts (BR-08), voice (BR-09), unreleased bots (BR-10)
+- `brand.md` — DRAFT (only [APPROVED] rules enforced)
+  - [APPROVED]: Let's Talk placement (BR-01), contact scope (BR-02), pricing/rates (BR-03), diagram style (BR-04)
+  - [PROPOSED]: no Professor (BR-05), dash characters (BR-06, internal constraint not enforced), palette (BR-07), fonts (BR-08), voice (BR-09), unreleased bots (BR-10)
   - Open policy gap: GAP-01 gold/white contrast awaiting Mike
   - Documentation debt: stale guides superseded
 
-- `blog.md` — DRAFT/NOT ENFORCED
+- `blog.md` — DRAFT (only [APPROVED] rules enforced)
   - [APPROVED]: body content restrictions (BL-01), diagram style (BL-02)
   - [PROPOSED]: classic family (BL-03), engineering family (BL-04), shared components (BL-05), plain headings (BL-06), blog length (BL-07)
   - Legacy layout debt: 4 posts on article.njk baselined with owner and target

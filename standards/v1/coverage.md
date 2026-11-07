@@ -1,6 +1,6 @@
-# Frontend coverage · v1
+# Frontend coverage · v1.0.0
 
-Version: 1.0.0
+Version: v1.0.0
 Effective: 2026-11-07
 
 This document lists the active GVS frontends to check for consistency review. Profile ownership: Marketing owns style and brand rules; Dev owns architecture and code rules.

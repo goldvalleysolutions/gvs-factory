@@ -1,11 +1,11 @@
-# Blog standards · v1
+# Blog standards · v1.0.0
 
-Version: 1.0.0
+Version: v1.0.0
 Effective: 2026-11-07
-Status: DRAFT — NOT ENFORCED
+Status: DRAFT — only rules tagged [APPROVED] are enforced; all others are non-blocking
 Profiles: Applies to repositories with blog content. Repos declare this profile in their STANDARDS.md.
 
-**This document is a draft framework. Lens 5 (Consistency) may block only on rules marked [APPROVED]. All other rules are non-blocking and go under Notes, not Findings.**
+**Lens 5 (Consistency) may block only on rules marked [APPROVED]. All other rules go under Notes, not Findings.**
 
 ## Approved rules (blocking)
 
@@ -59,8 +59,7 @@ A baseline entry prevents new drift but is not a permanent waiver. Each needs an
 
 ## Notes
 
-- This file is DRAFT/NOT ENFORCED as of v1.0.0
-- Only [APPROVED] rules may result in blocking findings
+- This file is DRAFT as of v1.0.0 — only [APPROVED] rules are enforced
 - All other rules are advisory and go under Notes
 - Changing any [APPROVED] rule requires Mike's explicit approval
 - Legacy layouts are debt, not approved exceptions

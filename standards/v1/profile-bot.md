@@ -1,6 +1,6 @@
-# Bot profile · v1
+# Bot profile · v1.0.0
 
-Version: 1.0.0
+Version: v1.0.0
 Effective: 2026-11-07
 Profiles: Applies to bot repositories only. Repos declare this profile in their STANDARDS.md.
 
@@ -25,7 +25,7 @@ All bots share the same structure and patterns: the `bot/` pack with role.md, bo
 
 ## Bot UI rules
 
-### BOT-06 Task-oriented shell, not marketing [APPROVED: derived from BOT-01 through BOT-05]
+### BOT-06 Task-oriented shell, not marketing [PROPOSED: derived, needs Mike]
 Bot frontends inherit shared visual identity (colors, fonts) but use a task-oriented shell. Never copy website hero, service cards, marketing section alternation, or contact CTA into product task flow. Bot UI serves task completion, not sales.
 
 ### BOT-07 Theme inheritance [PROPOSED: observed from bot repos, needs Mike]

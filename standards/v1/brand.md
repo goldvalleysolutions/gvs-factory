@@ -1,11 +1,11 @@
-# Brand standards · v1
+# Brand standards · v1.0.0
 
-Version: 1.0.0
+Version: v1.0.0
 Effective: 2026-11-07
-Status: DRAFT — NOT ENFORCED
+Status: DRAFT — only rules tagged [APPROVED] are enforced; all others are non-blocking
 Profiles: Applies to repositories with user-facing visual interfaces. Repos declare this profile in their STANDARDS.md.
 
-**This document is a draft framework. Lens 5 (Consistency) may block only on rules marked [APPROVED]. All other rules are non-blocking and go under Notes, not Findings.**
+**Lens 5 (Consistency) may block only on rules marked [APPROVED]. All other rules go under Notes, not Findings.**
 
 ## Approved rules (blocking)
 
@@ -23,12 +23,12 @@ Training is $175/hour with a free 30-minute consultation. The Pricing page is re
 ### BR-04 Diagram style [APPROVED: Mike, direct, Nov 2026]
 The diagram style follows the Claude training deck (Style A), which supersedes the text-only and swimlane (Style B) styles. One diagram per idea; gold = person; person labelled "You", never a name.
 
-### BR-05 No Professor persona [APPROVED: Mike, Oct 8 2026 via S10]
-No Professor persona or title in any GVS material. Source: preserved user wording "BTW - keep the professor title out of any of our stuff."
-
 ## Candidate rules (non-blocking, under review)
 
 These rules are derived from Marketing input but lack direct Mike approval. Violations go under Notes, not Findings. They require Mike's decision before enforcement.
+
+### BR-05 No Professor persona [PROPOSED: needs Mike]
+No Professor persona or title in any GVS material. Source: preserved user wording "BTW - keep the professor title out of any of our stuff." (S10, Oct 8 2026)
 
 ### BR-06 Dash characters [PROPOSED: internal working constraint, not enforced]
 No U+2013 (en dash) or U+2014 (em dash) in reader-facing text. Preserve spaced hyphens. This is an internal editorial constraint for drafting (evidence class W/P from v0.2). Direct adoption provenance was not verified. Not a Mike-approved standard and not enforced.
@@ -80,8 +80,7 @@ Existing debt items must have an owner, affected paths, target date or plan, and
 
 ## Notes
 
-- This file is DRAFT/NOT ENFORCED as of v1.0.0
-- Only [APPROVED] rules may result in blocking findings
+- This file is DRAFT as of v1.0.0 — only [APPROVED] rules are enforced
 - All other rules are advisory and go under Notes
 - Changing any [APPROVED] rule requires Mike's explicit approval
 - Promoting a [PROPOSED] rule to [APPROVED] requires Mike's decision with source citation

@@ -1,6 +1,6 @@
-# Common standards · v1
+# Common standards · v1.0.0
 
-Version: 1.0.0
+Version: v1.0.0
 Effective: 2026-11-07
 Profiles: Applies to all Gold Valley Solutions repositories.
 
@@ -17,7 +17,7 @@ README, `AGENTS.md`, and example config reflect any changed behaviour in the sam
 ### CM-03 One change per pull request [APPROVED: docs/process.md lines 50-51]
 Each pull request targets `test` and makes one logical change. No stacked pull requests.
 
-### CM-04 Local verification on exact head [APPROVED: standards/ci-minutes.md, standards/definition-of-done.md line 7]
+### CM-04 Local verification on exact head [APPROVED: standards/ci-minutes.md, standards/definition-of-done.md item 2]
 The pull request has a Local verification block with no FAIL, run on the exact commit being merged.
 
 ### CM-05 Evidence over self-report [APPROVED: docs/process.md line 8]

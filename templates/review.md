@@ -1,6 +1,6 @@
-# Review · <repo> PR #<n> · round <N>
+# Review · <repo> PR #<pr_number> · round <round_number>
 
-_Run by a reviewer that did not write the code. Save as `review-round-<N>.md` with the job and link it from the pull request._
+_Run by a reviewer that did not write the code. Save as `review-round-<round_number>.md` with the job and link it from the pull request._
 
 **Reviewed:** head `<sha>` against the acceptance checklist in spec `<path>`. The build report is a list of claims; the evidence run below checks them.
 **Reviewer:** <name or agent> · **Date and time:** <...>
@@ -8,7 +8,7 @@ _Run by a reviewer that did not write the code. Save as `review-round-<N>.md` wi
 
 ## Reviewer inputs (sanitized bundle)
 
-Every lens receives exactly the same bundle, with no builder commentary or prior-round findings:
+Every lens receives exactly the same bundle, with no builder commentary or prior-round findings. See `docs/process.md` section "Reviewer inputs (sanitized bundle)" for the full definition.
 
 1. **Diff** — the patch file between base and head SHAs.
 2. **Acceptance criteria** — the spec's checklist with the evidence run results attached (pass/fail per item).
@@ -91,3 +91,7 @@ _This lens is BLOCKING. Look at: the change follows the pinned standards version
 - **All five PASS and a Local verification block with no FAIL on the same head** → an agent merges to `test`; the PM agent writes the ready-to-merge note.
 - **Any CHANGES and rounds left** (max 3 rounds: round 1 plus 2 rework rounds) → the developer agent resumes the builder with this file.
 - **Any CHANGES after round 3** → stop; the PM agent writes the ready-to-merge note marked **NOT READY** with the open findings, for the human to decide.
+
+---
+
+_Template source: gvs-factory/templates/review.md_

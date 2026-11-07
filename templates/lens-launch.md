@@ -4,20 +4,41 @@ _Prompt template for launching a review lens as a new cloud-agent run. Each lens
 
 ---
 
-## Lens <N>: <Lens name>
+## Launch steps
 
-You are a reviewer running Lens <N> (<lens name>) for PR #<n> in <repo>, round <N>.
+1. **Start a NEW Cursor cloud agent** on the repo at the PR's **base ref** (not the PR branch). This ensures the reviewer has no access to the PR branch name or head commits in its default checkout.
+
+2. **Attach the sanitized bundle** as files:
+   - The diff from `gh api repos/{owner}/{repo}/compare/{base}...{head}` as a patch file
+   - The acceptance criteria with evidence results
+   - The standards text (see below)
+   - The evidence pack (verify-local output + screenshots)
+
+3. **Use this prompt template** with the lens-specific instructions.
+
+4. **Record provenance** in `review/<pr_number>-round<round_number>.json`:
+   - Agent ID and URL
+   - Requested model (from the launch)
+   - Reported model (from platform; may be "not reported")
+   - Head SHA and standards version
+
+---
+
+## Lens <lens_number>: <Lens name>
+
+You are a reviewer running Lens <lens_number> (<lens name>) for PR #<pr_number> in <repo>, round <round_number>.
+
+**This is a review-only run. Do not read the PR body, comments, or commit messages. Do not run git log. Judge only what is in the attached bundle.**
 
 ### Your inputs (sanitized bundle)
 
-You have been given exactly these inputs:
+You have been given exactly these inputs (see `docs/process.md` section "Reviewer inputs" for the full definition):
 
-1. **Diff:** The patch file between base SHA `<base>` and head SHA `<head>`.
-2. **Acceptance criteria:** The spec's checklist with evidence run results attached.
-3. **Standards:** Version `<version>` with these applicable profiles: <list profiles>.
-4. **Reference files:** <list reference files from STANDARDS.md>.
-5. **Evidence pack:** Raw `verify-local.sh` output and screenshots from the evidence run at head SHA.
-6. **These instructions.**
+1. **Diff** — the patch file between base SHA `<base>` and head SHA `<head>`.
+2. **Acceptance criteria** — the spec's checklist with evidence run results attached (pass/fail per item).
+3. **Standards** — the full text of `common.md` plus each declared profile from the repo's STANDARDS.md, concatenated with file headers (e.g., `--- common.md ---`).
+4. **Evidence pack** — raw `verify-local.sh` output and screenshots from the evidence run at head SHA. No builder report, no developer commentary, no previous reviewer findings.
+5. **These instructions** — only the instructions for this lens.
 
 You do NOT have:
 - The builder's report or commentary
@@ -43,7 +64,7 @@ You do NOT have:
 ### Output format
 
 ```markdown
-## Lens <N> · <Lens name>
+## Lens <lens_number> · <Lens name>
 VERDICT: PASS | CHANGES
 
 ### Findings
@@ -59,15 +80,34 @@ VERDICT: PASS | CHANGES
 
 ---
 
+## Standards input format
+
+The standards input is the full text of `common.md` plus each declared profile, concatenated with file headers:
+
+```
+--- common.md ---
+<full text of common.md>
+
+--- profile-bot.md ---
+<full text of profile-bot.md, if declared>
+
+--- brand.md ---
+<full text of brand.md, if declared>
+```
+
+Only include profiles declared in the repo's STANDARDS.md.
+
+---
+
 ## Orchestrator notes
 
 _For the orchestrator launching lens runs:_
 
-1. Launch each lens as a **new cloud-agent**, not a reply or continued session.
+1. Launch each lens as a **NEW cloud-agent** on the repo at the PR's **base ref**, not a reply or continued session.
 2. All five lenses get the same sanitized bundle.
 3. Do not include prior findings in any lens input.
 4. Wait for all five verdicts before combining.
-5. Record provenance in `review/<PR>-round<N>.json` using the schema.
+5. Record provenance in `review/<pr_number>-round<round_number>.json` using the schema.
 6. Check closure against prior findings only after all verdicts are in.
 
 ### Model selection

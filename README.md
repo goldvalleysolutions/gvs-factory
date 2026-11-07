@@ -15,6 +15,16 @@ Money, auth and permissions, deploys, database changes, messages to real people,
 
 The full process is in `docs/process.md`.
 
+## Roles
+
+**Mike Bowers** is the owner and the sole approver of:
+- Merges to `main`
+- Standards exceptions and new deviations
+- New rules and rule changes
+- Any always-flagged item
+
+Requests for Mike's approval go through **Dev · Product Manager**, who puts a card in the HQ "Needs Mike" list on Trello. The approval reference is a link to Mike's own reply.
+
 ## Repo layout
 
 ```
@@ -31,8 +41,8 @@ standards/
     common.md             rules for all repos
     profile-bot.md        rules for bot repos
     profile-web.md        rules for web frontends
-    brand.md              brand rules (DRAFT/NOT ENFORCED)
-    blog.md               blog rules (DRAFT/NOT ENFORCED)
+    brand.md              brand rules (DRAFT — only [APPROVED] rules enforced)
+    blog.md               blog rules (DRAFT — only [APPROVED] rules enforced)
     coverage.md           frontend inventory
 templates/
   spec.md                 build spec with acceptance criteria and Verify lines
@@ -67,8 +77,8 @@ Project repos pin a standards version in their `STANDARDS.md` and declare applic
 - `common.md` — applies to all repos
 - `profile-bot.md` — bot repositories only
 - `profile-web.md` — web frontend repositories only
-- `brand.md` — repos with user-facing visual interfaces (DRAFT/NOT ENFORCED)
-- `blog.md` — repos with blog content (DRAFT/NOT ENFORCED)
+- `brand.md` — repos with user-facing visual interfaces (DRAFT — only [APPROVED] rules enforced)
+- `blog.md` — repos with blog content (DRAFT — only [APPROVED] rules enforced)
 
 See `standards/v1/` for the current standards and `templates/standards-pin.md` for the project pin template.
 

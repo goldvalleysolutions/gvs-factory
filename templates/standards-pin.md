@@ -19,16 +19,29 @@ _Check all that apply. Each profile adds its rules to this repo's consistency re
 - [ ] `common.md` — applies to all repos (required)
 - [ ] `profile-bot.md` — bot repositories only
 - [ ] `profile-web.md` — web frontend repositories only
-- [ ] `brand.md` — repos with user-facing visual interfaces (DRAFT/NOT ENFORCED)
-- [ ] `blog.md` — repos with blog content (DRAFT/NOT ENFORCED)
+- [ ] `brand.md` — repos with user-facing visual interfaces (DRAFT — only [APPROVED] rules enforced)
+- [ ] `blog.md` — repos with blog content (DRAFT — only [APPROVED] rules enforced)
+
+### Profile decision
+
+**Which profile applies to this repo?**
+
+- **profile-bot** — A repo that ships a Docker image run with `docker run` is `profile-bot`, even if it has an admin web UI. The bot's web UI serves task completion, not public website pages.
+
+- **profile-web** — A repo that ships public website pages (marketing, blog, portfolio) is `profile-web`. It does not apply to bot admin UIs.
+
+A repo may declare both profiles only if it genuinely contains both a bot and a public website. Most repos declare one.
 
 ## Reference files
 
 _List the files that are the reference implementation for this repo. New code follows these patterns._
 
+A **reference file** is the canonical implementation of a pattern that others copy. When multiple files could implement a pattern, the reference file is the one that new code should match. List only files in this repo.
+
 | Family/component | Reference path | Notes |
 |------------------|----------------|-------|
 | <e.g., base shell> | <e.g., src/_includes/base.njk> | <e.g., all pages extend this> |
+| <e.g., blog post> | <e.g., thoughts/gold-valley-bots.md> | <e.g., new posts follow this structure> |
 | | | |
 
 ## Project-specific rules
