@@ -1,18 +1,32 @@
 # Definition of done
 
-A change is done when every item below is true. The PM agent checks items 1 to 8 before writing the ready-to-merge note. The human checks item 9.
+A change is done when every item below is true. The PM agent checks items 1 to 11 before writing the ready-to-merge note. The human checks item 12.
 
-1. **Criteria met with evidence.** Every acceptance criterion in the spec passes, with reviewer or Local verification evidence. The builder's own report does not count as evidence.
+1. **Criteria met with evidence.** Every acceptance criterion in the spec passes, with Reviewer or Local verification evidence. The builder's own report does not count as evidence.
+
 2. **Local verification on the exact head.** The pull request has a Local verification block with no FAIL, run on the commit being merged (see `standards/ci-minutes.md`). No stacked pull requests.
-3. **Four lenses pass.** Security, code, tests and evals, and UX each have `VERDICT: PASS` on that same commit, within 3 review rounds.
-4. **Scope held.** No files changed outside the spec's areas. Out-of-scope items are untouched.
-5. **No secrets or real personal data.** No keys, tokens or `.env` files committed. Examples use fictional data.
-6. **Docs updated.** README, `AGENTS.md` and example config reflect any changed behaviour.
-7. **Flags named.** Every always-flagged item the change touches is listed in the ready-to-merge note, and any product decisions are defaults in config, not hard-coded.
-8. **Playwright e2e suite passes.** The repo's `tests/e2e/` Playwright suite (desktop and mobile, stub LLM) PASSes in `scripts/verify-local.sh` on the head, the Local verification block shows passes per project and the head SHA, and any new user-facing behaviour has new or updated e2e tests in this pull request. See the rule below.
-9. **Human approval.** The human has tried the change on `test` and merged it to `main`.
 
-## Playwright end-to-end rule (Mike, 2026-10-30)
+3. **Test matrix executed independently.** The Reviewer executed the test matrix (`templates/test-matrix.md`) on the exact head commit before the four-lens review. The matrix records the head SHA, environment, and raw outputs. The builder's claims do not substitute for this evidence. A failed or blocked case is CHANGES.
+
+4. **Four lenses pass.** Security, Code, Tests and evals, and UX/Consistency each have `VERDICT: PASS` on that same commit, within 3 review rounds. The lenses act as independent double-checks, receiving only the sanitized bundle (see `docs/process.md` section 5a), never the builder's narrative or prior verdicts.
+
+5. **Tests and evals ran commands.** The Tests and evals lens re-executed the negative and environment cases and listed the commands it ran. "Commands run: None" means CHANGES. Tests run with no secrets, no network, and no paid calls.
+
+6. **Scope held.** No files changed outside the spec's areas. Out-of-scope items are untouched.
+
+7. **No secrets or real personal data.** No keys, tokens, or `.env` files committed. Examples use fictional data.
+
+8. **Docs updated.** README, `AGENTS.md`, and example config reflect any changed behaviour.
+
+9. **Flags named.** Every always-flagged item the change touches is listed in the ready-to-merge note, and any product decisions are defaults in config, not hard-coded.
+
+10. **Lessons recorded.** Where applicable, lessons are recorded in `templates/lessons-log.md` with source, evidence, disposition, and approval. Lessons clarifying existing requirements (type: clarification) can be applied to matrix rows and known pitfalls without approval; a clarification may only add or tighten, never remove or relax. New policy or standards changes (type: new-policy) require the human's approval and are never adopted automatically. An agent's say-so is never approval.
+
+11. **Playwright e2e suite passes (or recorded N/A).** For application repos, the `tests/e2e/` Playwright suite PASSes in `scripts/verify-local.sh` on the head (see the rule below). For a genuinely application-free docs repository, the native N/A row records the rationale; that is not a PASS of an e2e suite and never uses invented desktop/mobile counts.
+
+12. **Human approval.** The human has tried the change on `test` and merged it to `main`.
+
+## Playwright end-to-end rule (2026-10-30)
 
 Standing rule for core and every bot repo:
 
@@ -24,3 +38,4 @@ Standing rule for core and every bot repo:
 6. The pull request's Local verification block lists the suite result (passes per project) and the head SHA.
 7. The Reviewer's evidence run includes the suite.
 8. Any new user-facing behaviour adds or updates its e2e tests in the same pull request.
+9. **N/A (narrow):** This docs-process repository has no application runtime, no browser UI, no `tests/e2e/` suite, and no configured Playwright command. Record `N/A (VERIFY_E2E_NA_REASON)` — not a PASS and not a failed-case waiver. Security scans (gitleaks, semgrep) must still be installed, execute, and pass; they cannot be skipped. `--allow-missing` is not acceptance.

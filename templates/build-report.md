@@ -28,7 +28,7 @@ Files changed:
 
 ### AC-G.1 · Local verification on head
 - **Command:** `scripts/verify-local.sh` on <head sha>
-- **Output:** the Local verification block (paste it in full below the report), including the Playwright e2e row with passes per project (e.g. `desktop 12/12, mobile 12/12`) and the head SHA
+- **Output:** the Local verification block (paste it in full below the report), including the Playwright e2e row: real passes per project (e.g. `desktop 12/12, mobile 12/12`) when the suite ran, or native `N/A (rationale)` when eligible. Never invent counts. Include the head SHA.
 - **Result:** PASS | FAIL
 
 ## Validation

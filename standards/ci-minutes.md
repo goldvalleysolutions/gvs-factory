@@ -11,7 +11,7 @@ Before a pull request is merged to `test`, the developer agent runs every check 
 - Lint and type checks
 - Unit tests
 - Functional tests
-- The Playwright e2e suite under `tests/e2e/` (desktop and mobile projects, stub LLM by default; screenshot and trace on every failure). It must PASS before any merge to `test`
+- The Playwright e2e suite under `tests/e2e/` (desktop and mobile projects, stub LLM by default; screenshot and trace on every failure). It must PASS before any merge to `test` whenever the repo has an application runtime, suite, or configured e2e command. The narrow docs-only N/A in `standards/definition-of-done.md` is a native N/A row with recorded rationale, not a PASS and not invented desktop/mobile counts.
 - Security: gitleaks (secrets), Semgrep (free rules, `p/ci`), `npm audit` or `pip-audit` (dependencies), and Trivy (`HIGH,CRITICAL`, `--ignore-unfixed`) on every image built from a Dockerfile
 - Container checks: build each Dockerfile; when the repo has a compose file, bring the stack up and test against it
 
@@ -25,13 +25,14 @@ The factory knows no project names. Each project sets these in its `AGENTS.md` o
 |---|---|
 | `VERIFY_COMPOSE_FILE` | Compose file to use. Default: the first of `compose.yaml`, `compose.yml`, `docker-compose.yaml`, `docker-compose.yml` at the root |
 | `VERIFY_COMPOSE_TEST` | Command run against the stack: `docker compose up -d --build --wait`, the command, then `docker compose down -v` (always) |
-| `VERIFY_E2E_CMD` | End-to-end command. Default when `tests/e2e/` exists: `npx playwright test`. Runs while the stack is up, or on its own when there is no compose file. With no `tests/e2e/` and no command, the row is `FAIL`, or `SKIP` with a clear message under `--allow-missing` |
+| `VERIFY_E2E_CMD` | End-to-end command. Default when `tests/e2e/` exists: `npx playwright test`. Runs while the stack is up, or on its own when there is no compose file. A configured command always stays applicable. |
+| `VERIFY_E2E_NA_REASON` | Native docs-only N/A rationale. Accepted when there is no application runtime, no compose, no `tests/e2e/`, and no `VERIFY_E2E_CMD`. Records an N/A row with that rationale, not PASS. |
 | `SEMGREP_CONFIG` | Semgrep rules. Default `p/ci` |
 | `VERIFY_DIRS` | Directories to check. Default: `.` and first-level subdirectories with a project file |
 | `VERIFY_DOCKER_TARGET` | Build target for the root `Dockerfile` of each checked directory |
 | `VERIFY_DOCKERFILES` | Extra Dockerfiles to build and scan, for example `Dockerfile.worker` |
 | `VERIFY_DOCKER_BUILD_ARGS` | Extra `docker build` flags, for example `--network host` |
-| `VERIFY_SKIP` | Checks to skip (first word of the row, e.g. `mypy`); the row shows `SKIP` with `VERIFY_SKIP_REASON` (default "not part of this repo's gate"). Name each skip in the pull request |
+| `VERIFY_SKIP` | Checks to skip (first word of the row, e.g. `mypy`); the row shows `SKIP` with `VERIFY_SKIP_REASON` (default "not part of this repo's gate"). Name each skip in the pull request. Gitleaks and Semgrep cannot be skipped. |
 
 `VERIFY_COMPOSE_TEST` and `VERIFY_E2E_CMD` get `COMPOSE_PROJECT_NAME` and `COMPOSE_FILE` in their environment, so plain `docker compose ...` calls inside them hit the script's stack. A repo can commit these settings in `.verify-local.env` (`KEY=VALUE` lines; only `VERIFY_*` and `SEMGREP_CONFIG` are read, the file is never sourced, and the environment wins).
 
@@ -41,7 +42,7 @@ The factory knows no project names. Each project sets these in its `AGENTS.md` o
 
 - Title `## Local verification`
 - Repo, branch, head SHA (`git rev-parse HEAD`), time, and a dirty-tree line
-- The Playwright e2e result with passes per project (for example `desktop 12/12, mobile 12/12`); add it to the e2e row
+- The Playwright e2e result: real passes per project (for example `desktop 12/12, mobile 12/12`) when the suite ran, or native `N/A (rationale)` for an eligible docs-only repo. Never invent counts.
 - A table with one row per command: command, result (`PASS`, `FAIL` or `SKIP` with a reason), duration
 - An overall line: `Overall: PASS` or `Overall: FAIL`
 
@@ -76,7 +77,7 @@ Overall: PASS
 
 - No Local verification block, a block with any `FAIL`, or a block on a SHA other than the pull request's head means **no merge**.
 - Any new commit needs a new block.
-- `MISSING` tools count as `FAIL` unless the gap is named in the pull request and accepted by the human.
+- `MISSING` tools count as `FAIL`. Security scanners (gitleaks, semgrep) must be installed, execute, and pass; `--allow-missing` is not acceptance. A docs-only browser e2e N/A is recorded as an N/A row with rationale, not SKIP and not a missing-tool waiver.
 - Agents merge to `test`. Only the human merges to `main`.
 
 ## 3. What CI keeps
