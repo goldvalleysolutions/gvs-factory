@@ -83,7 +83,7 @@ printf 'VERIFY_E2E_NA_REASON=docs-only\n' > "$work/.verify-local.env"
 printf 'services: {}\n' > "$work/compose.yaml"
 commit
 out=$(cd "$work" && bash scripts/verify-local.sh 2>&1) || true
-check "compose ineligible" "FAIL (N/A claim ineligible: runtime, source, or ambiguous tracked content)"
+check "compose ineligible" "FAIL (N/A claim ineligible: runtime, source, or ambiguous worktree content)"
 absent "compose is not N/A granted" "N/A (docs-only)"
 rm -rf "$work"
 
@@ -95,7 +95,7 @@ mkdir -p "$work/src"
 printf 'print("main")\n' > "$work/src/main.py"
 commit
 out=$(cd "$work" && bash scripts/verify-local.sh 2>&1) || true
-check "source ineligible" "FAIL (N/A claim ineligible: runtime, source, or ambiguous tracked content)"
+check "source ineligible" "FAIL (N/A claim ineligible: runtime, source, or ambiguous worktree content)"
 absent "source is not N/A granted" "N/A (docs-only)"
 rm -rf "$work"
 
@@ -142,6 +142,45 @@ check "failing semgrep is FAIL" "| \`semgrep scan --config p/ci --error\` | FAIL
 check "failing scanner overall FAIL" "Overall: FAIL"
 absent "failing scanner not skipped" "SKIP (MISSING: semgrep"
 rm -rf "$work" "$bindir"
+
+echo "=== 9. ignored source denies N/A on a clean tree ==="
+setup
+printf 'VERIFY_E2E_NA_REASON=docs-only\n' > "$work/.verify-local.env"
+printf 'app.py\n' > "$work/.gitignore"
+commit
+printf 'print("ignored")\n' > "$work/app.py"
+out=$(cd "$work" && bash scripts/verify-local.sh 2>&1) || true
+check "ignored source ineligible" "FAIL (N/A claim ineligible: runtime, source, or ambiguous worktree content)"
+check "ignored source tree clean" "Tree: clean"
+check "ignored source overall FAIL" "Overall: FAIL"
+absent "ignored source is not N/A granted" "N/A (docs-only)"
+rm -rf "$work"
+
+echo "=== 10. untracked source denies N/A (not only dirty) ==="
+setup
+printf 'VERIFY_E2E_NA_REASON=docs-only\n' > "$work/.verify-local.env"
+commit
+printf 'print("untracked")\n' > "$work/app.py"
+out=$(cd "$work" && bash scripts/verify-local.sh 2>&1) || true
+check "untracked source ineligible" "FAIL (N/A claim ineligible: runtime, source, or ambiguous worktree content)"
+check "untracked source dirty" "DIRTY"
+check "untracked source overall FAIL" "Overall: FAIL"
+absent "untracked source is not N/A granted" "N/A (docs-only)"
+rm -rf "$work"
+
+echo "=== 11. allowlisted symlink to ignored runtime denies N/A ==="
+setup
+printf 'VERIFY_E2E_NA_REASON=docs-only\n' > "$work/.verify-local.env"
+printf 'app.py\n' > "$work/.gitignore"
+printf 'print("ignored")\n' > "$work/app.py"
+ln -s app.py "$work/notes.md"
+commit
+out=$(cd "$work" && bash scripts/verify-local.sh 2>&1) || true
+check "symlink ineligible" "FAIL (N/A claim ineligible: runtime, source, or ambiguous worktree content)"
+check "symlink tree clean" "Tree: clean"
+check "symlink overall FAIL" "Overall: FAIL"
+absent "symlink is not N/A granted" "N/A (docs-only)"
+rm -rf "$work"
 
 if [ $failed -eq 0 ]; then
   echo "All causal e2e-applicability cases PASS"
