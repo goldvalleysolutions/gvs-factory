@@ -19,7 +19,7 @@ _The Chief architect produces this matrix before the build starts. The Reviewer 
 | AC-T1.2 | environment | `curl -s -o /dev/null -w "%{http_code}" http://localhost:9999/notes/export.csv` (wrong port) | connection refused or timeout | | | |
 | AC-G.1 | positive | `bash scripts/verify-local.sh --allow-missing` | exit 0, no FAIL rows | | | |
 | AC-G.1 | negative | See spec.md section 4 AC-G.1/AC-G.2 scaffold | exit non-zero, FAIL row for ruff (F401 unused import) | | | |
-| AC-G.1 | environment | `(gitleaks() { return 127; }; export -f gitleaks; bash scripts/verify-local.sh)` | exit non-zero, output contains "MISSING: gitleaks" row | | | |
+| AC-G.1 | environment | `PATH=$(echo "$PATH" \| tr ':' '\n' \| grep -v gitleaks \| paste -sd:) bash scripts/verify-local.sh` | exit non-zero, output contains "MISSING: gitleaks" row | | | |
 
 _Add rows for every acceptance criterion. Each criterion gets at least one positive, one negative, and one environment case. State expectations as expected observable behaviour (e.g., "HTTP 401", "pytest test passes asserting rejection"), not hard-coded exit codes._
 

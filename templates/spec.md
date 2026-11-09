@@ -62,7 +62,7 @@ _Each one is one observable behaviour plus how to check it, runnable by someone 
 Preconditions: ruff installed, temp directory writable.
 ```bash
 # Instantiate
-d=$(mktemp -d) && echo -e '[tool.ruff]\nselect = ["F"]' > "$d/pyproject.toml"
+d=$(mktemp -d) && echo -e '[tool.ruff.lint]\nselect = ["F"]' > "$d/pyproject.toml"
 # Positive (clean): exit 0
 echo 'x = 1' > "$d/clean.py" && ruff check "$d/clean.py"
 # Negative (F401 unused import): exit non-zero
