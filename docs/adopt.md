@@ -10,7 +10,15 @@ At the start of a task, resolve `main` once:
 git ls-remote https://github.com/goldvalleysolutions/gvs-factory.git refs/heads/main
 ```
 
-Record the SHA. Use only that SHA for the rest of the task, for example `git show <sha>:docs/process.md`. Do not move to a newer `main` mid-task. The next task resolves `main` again and gets the latest automatically.
+Record the SHA. `git ls-remote` returns a foreign SHA, not an object in the consuming repo, so `git show <sha>:...` will not work there and is not required. Read factory docs at immutable GitHub URLs for that SHA (or an authenticated remote file tool). Do not clone factory into the consumer and do not copy standards. Example URLs (replace `<sha>` with the recorded SHA):
+
+```
+https://github.com/goldvalleysolutions/gvs-factory/blob/<sha>/docs/adopt.md
+https://github.com/goldvalleysolutions/gvs-factory/blob/<sha>/docs/process.md
+https://github.com/goldvalleysolutions/gvs-factory/blob/<sha>/standards/definition-of-done.md
+```
+
+Do not move to a newer `main` mid-task. The next task resolves `main` again and gets the latest automatically.
 
 If `gvs-factory` is missing, private, or unreadable at that SHA, **FAIL explicitly**. Do not skip spec, architect handoff, test matrix, local verification, four lenses, or the 3-round cap.
 
@@ -28,7 +36,7 @@ There is no auto-updater, service, or worktree product.
 6. At most 3 review rounds, then the human. Agents must not start round 4.
 7. Only the human merges `test` into `main`.
 
-Full text: `docs/process.md` and `standards/definition-of-done.md` at the pinned SHA.
+Full text: the GitHub blob URLs above for `docs/process.md` and `standards/definition-of-done.md` at the pinned SHA.
 
 Advisory arbiter handles disputed findings only and has no override. Do not add extra review machinery.
 
@@ -40,6 +48,7 @@ Keep project-specific security instructions and check commands in the consuming 
 ## Software factory
 
 Do not copy factory process into this repo.
-At task start, pin goldvalleysolutions/gvs-factory `main` (see docs/adopt.md).
+At task start, pin goldvalleysolutions/gvs-factory `main`
+(https://github.com/goldvalleysolutions/gvs-factory/blob/main/docs/adopt.md).
 If factory source is missing or unreadable, FAIL. Do not skip factory gates.
 ```
