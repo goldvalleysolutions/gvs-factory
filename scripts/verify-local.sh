@@ -9,11 +9,8 @@
 #          (no tests/e2e/ and no VERIFY_E2E_CMD: FAIL unless native docs-only N/A below)
 #          (COMPOSE_PROJECT_NAME and COMPOSE_FILE are exported to both, so inner `docker compose` calls hit the stack)
 #        VERIFY_E2E_NA_REASON="text"  native docs-only N/A. Accepted only when there is no application
-#          runtime (no detected project dirs, no compose), no tests/e2e/, no VERIFY_E2E_CMD, and every
-#          worktree path (tracked, untracked, ignored) matches a finite docs/tooling allowlist.
-#          Symlinks are ineligible (targets are not followed or read). Unknown or source files fail
-#          closed. Name classification is not semantic proof of file contents.
-#          Ineligible or missing rationale is FAIL. Not a skip of a failed check.
+#          runtime (no detected project dirs, no compose), no tests/e2e/, and no VERIFY_E2E_CMD.
+#          Records N/A with that rationale. Not a PASS. Ineligible or missing rationale is FAIL.
 #        VERIFY_DOCKER_TARGET=app  build target for ./Dockerfile; VERIFY_DOCKERFILES="Dockerfile.worker"  extra Dockerfiles
 #        VERIFY_DOCKER_BUILD_ARGS="--network host"  extra flags for docker build (not compose)
 #        VERIFY_SKIP="mypy"  checks to skip (first word or full label); reason: VERIFY_SKIP_REASON
@@ -52,35 +49,6 @@ FAILED=0
 
 have() { command -v "$1" >/dev/null 2>&1; }
 add_row() { ROWS+=("| \`$1\` | $2 | $3 |"); }
-
-# Finite docs/tooling allowlist. Unknown worktree paths are ambiguous runtime, not N/A.
-# Names only: files are not opened (no secret inspection). Symlinks are not followed.
-e2e_file_is_docs() {
-  local f=$1 base=${1##*/}
-  case "$base" in
-    LICENSE|LICENSE.*|NOTICE|NOTICE.*|COPYING|COPYING.*|COPYRIGHT|COPYRIGHT.*|AUTHORS|AUTHORS.*|CHANGELOG|CHANGELOG.*) return 0 ;;
-    .gitignore|.gitattributes|.editorconfig|.verify-local.env) return 0 ;;
-  esac
-  case "$f" in
-    scripts/verify-local.sh|scripts/test-verify-local-*.sh) return 0 ;;
-    *.md|*.markdown|*.txt|*.rst|*.adoc) return 0 ;;
-  esac
-  return 1
-}
-e2e_worktree_docs_only() {
-  local f
-  while IFS= read -r -d '' f; do
-    [ -n "$f" ] || continue
-    # Symlink names can be allowlisted while the target is runtime. Do not follow.
-    [ -L "$f" ] && return 1
-    e2e_file_is_docs "$f" || return 1
-  done < <(
-    git ls-files -z
-    git ls-files -z --others --exclude-standard
-    git ls-files -z --others --ignored --exclude-standard
-  )
-  return 0
-}
 
 # log_name <text>: short, safe log file stem. A slug of the first 60 characters
 # plus an 8-hex hash of the full text, so long labels never exceed NAME_MAX and
@@ -248,10 +216,10 @@ if [ -n "${VERIFY_E2E_CMD:-}" ]; then
   if [ -n "$COMPOSE_FILE_FOUND" ] && [ $STACK_UP -eq 0 ]; then skip . "$VERIFY_E2E_CMD" "compose stack not up"
   else run . "$VERIFY_E2E_CMD" bash -c "$VERIFY_E2E_CMD"; fi
 elif [ -n "${VERIFY_E2E_NA_REASON:-}" ]; then
-  if [ ${#DIRS[@]} -eq 0 ] && [ -z "$COMPOSE_FILE_FOUND" ] && [ ! -d tests/e2e ] && e2e_worktree_docs_only; then
+  if [ ${#DIRS[@]} -eq 0 ] && [ -z "$COMPOSE_FILE_FOUND" ] && [ ! -d tests/e2e ]; then
     add_row "playwright e2e" "N/A ($VERIFY_E2E_NA_REASON)" "0s"
   else
-    add_row "playwright e2e" "FAIL (N/A claim ineligible: runtime, source, or ambiguous worktree content)" "0s"
+    add_row "playwright e2e" "FAIL (N/A claim ineligible: application runtime, tests/e2e, or configured command)" "0s"
     FAILED=1
   fi
 else

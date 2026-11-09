@@ -26,7 +26,7 @@ The factory knows no project names. Each project sets these in its `AGENTS.md` o
 | `VERIFY_COMPOSE_FILE` | Compose file to use. Default: the first of `compose.yaml`, `compose.yml`, `docker-compose.yaml`, `docker-compose.yml` at the root |
 | `VERIFY_COMPOSE_TEST` | Command run against the stack: `docker compose up -d --build --wait`, the command, then `docker compose down -v` (always) |
 | `VERIFY_E2E_CMD` | End-to-end command. Default when `tests/e2e/` exists: `npx playwright test`. Runs while the stack is up, or on its own when there is no compose file. A configured command always stays applicable. |
-| `VERIFY_E2E_NA_REASON` | Native docs-only N/A rationale. Accepted only when there is no application runtime, no compose, no `tests/e2e/`, no `VERIFY_E2E_CMD`, and every worktree path (tracked, untracked, ignored) matches the docs/tooling allowlist in `scripts/verify-local.sh`. Symlinks FAIL (not followed). Unknown or source files FAIL. Not a skip of a failed check. |
+| `VERIFY_E2E_NA_REASON` | Native docs-only N/A rationale. Accepted when there is no application runtime, no compose, no `tests/e2e/`, and no `VERIFY_E2E_CMD`. Records an N/A row with that rationale, not PASS. |
 | `SEMGREP_CONFIG` | Semgrep rules. Default `p/ci` |
 | `VERIFY_DIRS` | Directories to check. Default: `.` and first-level subdirectories with a project file |
 | `VERIFY_DOCKER_TARGET` | Build target for the root `Dockerfile` of each checked directory |

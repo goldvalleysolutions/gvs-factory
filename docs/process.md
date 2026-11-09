@@ -96,7 +96,7 @@ Each lesson is recorded in `templates/lessons-log.md` with source, evidence, dis
 
 ### Playwright e2e
 
-Standing rule: `standards/definition-of-done.md`. `scripts/verify-local.sh` records native N/A only when `VERIFY_E2E_NA_REASON` is set, the repo has no application runtime, compose, `tests/e2e/`, or `VERIFY_E2E_CMD`, and every worktree path (tracked, untracked, ignored) matches a finite docs/tooling allowlist. Symlinks are ineligible; targets are not followed. Unknown or source files fail closed. An ineligible or missing rationale is FAIL. That is not a PASS of an e2e suite and not a waiver of a failed check. Security scans (gitleaks, semgrep) must still be installed, execute, and pass; they cannot be skipped. `--allow-missing` is not acceptance.
+Standing rule: `standards/definition-of-done.md`. For this docs-process repo, `scripts/verify-local.sh` records `N/A (VERIFY_E2E_NA_REASON)` when there is no application runtime, no compose, no `tests/e2e/`, and no `VERIFY_E2E_CMD`. That is not a PASS of an e2e suite. Security scans (gitleaks, semgrep) must still be installed, execute, and pass; they cannot be skipped. `--allow-missing` is not acceptance.
 
 ## 5. The four review lenses
 
@@ -141,8 +141,8 @@ The sanitized bundle never contains:
 
 - A round is complete only when all four lens verdicts exist. Never resume the builder mid-round.
 - Any CHANGES verdict starts a rework round. The builder answers every finding in the build report log: what was changed, or why not.
-- Maximum **3 rounds** in total (round 1 plus 2 rework rounds).
-- If any lens still says CHANGES after round 3, stop. The PM agent writes the ready-to-merge note marked **NOT READY** with the open findings, and the human decides.
+- Maximum **3 rounds** in total (round 1 plus 2 rework rounds). Agents must not relaunch reviews past round 3.
+- If any lens still says CHANGES after round 3, stop. The PM agent writes the ready-to-merge note marked **NOT READY** with the open findings, and the human decides. Do not start round 4.
 - If the builder is blocked (spec contradiction, a decision only the human can make, an environment failure), the build report starts with `STATUS: BLOCKED` and says exactly what is needed.
 
 ### 6a. Advisory arbiter (disputed findings only)

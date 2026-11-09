@@ -104,7 +104,7 @@ _Runtime evidence required: the sanitized bundle must include runtime evidence f
 
 - **All four PASS, a Local verification block with no FAIL, and test matrix executed on the same head:** an agent merges to `test`; the PM agent writes the ready-to-merge note.
 - **Any CHANGES and rounds left** (max 3 rounds: round 1 plus 2 rework rounds): the Developer agent resumes the builder with this file.
-- **Any CHANGES after round 3:** stop; the PM agent writes the ready-to-merge note marked **NOT READY** with the open findings, for the human to decide.
+- **Any CHANGES after round 3:** stop; agents must not start round 4; the PM agent writes the ready-to-merge note marked **NOT READY** with the open findings, for the human to decide.
 
 ## Disputed findings (Arbiter)
 

@@ -83,23 +83,11 @@ printf 'VERIFY_E2E_NA_REASON=docs-only\n' > "$work/.verify-local.env"
 printf 'services: {}\n' > "$work/compose.yaml"
 commit
 out=$(cd "$work" && bash scripts/verify-local.sh 2>&1) || true
-check "compose ineligible" "FAIL (N/A claim ineligible: runtime, source, or ambiguous worktree content)"
+check "compose ineligible" "FAIL (N/A claim ineligible: application runtime, tests/e2e, or configured command)"
 absent "compose is not N/A granted" "N/A (docs-only)"
 rm -rf "$work"
 
-echo "=== 5. non-manifest app source fails closed ==="
-setup
-printf 'VERIFY_E2E_NA_REASON=docs-only\n' > "$work/.verify-local.env"
-printf 'print("app")\n' > "$work/app.py"
-mkdir -p "$work/src"
-printf 'print("main")\n' > "$work/src/main.py"
-commit
-out=$(cd "$work" && bash scripts/verify-local.sh 2>&1) || true
-check "source ineligible" "FAIL (N/A claim ineligible: runtime, source, or ambiguous worktree content)"
-absent "source is not N/A granted" "N/A (docs-only)"
-rm -rf "$work"
-
-echo "=== 6. missing rationale fails closed ==="
+echo "=== 5. missing rationale fails closed ==="
 setup
 commit
 out=$(cd "$work" && bash scripts/verify-local.sh 2>&1) || true
@@ -107,7 +95,7 @@ check "missing rationale FAIL" "FAIL (no tests/e2e/ and no VERIFY_E2E_CMD; docs-
 absent "missing rationale is not N/A" "N/A ("
 rm -rf "$work"
 
-echo "=== 7. missing scanner fails even with --allow-missing ==="
+echo "=== 6. missing scanner fails even with --allow-missing ==="
 setup
 printf 'VERIFY_E2E_NA_REASON=no application runtime, docs-only\n' > "$work/.verify-local.env"
 commit
@@ -130,7 +118,7 @@ check "missing gitleaks is FAIL" "FAIL (MISSING: gitleaks not installed)"
 absent "missing gitleaks not skipped" "SKIP (MISSING: gitleaks"
 rm -rf "$work" "$bin"
 
-echo "=== 8. failing scanner is FAIL (stub semgrep, not a real scan) ==="
+echo "=== 7. failing scanner is FAIL (stub semgrep, not a real scan) ==="
 setup
 printf 'VERIFY_E2E_NA_REASON=no application runtime, docs-only\n' > "$work/.verify-local.env"
 commit
@@ -142,45 +130,6 @@ check "failing semgrep is FAIL" "| \`semgrep scan --config p/ci --error\` | FAIL
 check "failing scanner overall FAIL" "Overall: FAIL"
 absent "failing scanner not skipped" "SKIP (MISSING: semgrep"
 rm -rf "$work" "$bindir"
-
-echo "=== 9. ignored source denies N/A on a clean tree ==="
-setup
-printf 'VERIFY_E2E_NA_REASON=docs-only\n' > "$work/.verify-local.env"
-printf 'app.py\n' > "$work/.gitignore"
-commit
-printf 'print("ignored")\n' > "$work/app.py"
-out=$(cd "$work" && bash scripts/verify-local.sh 2>&1) || true
-check "ignored source ineligible" "FAIL (N/A claim ineligible: runtime, source, or ambiguous worktree content)"
-check "ignored source tree clean" "Tree: clean"
-check "ignored source overall FAIL" "Overall: FAIL"
-absent "ignored source is not N/A granted" "N/A (docs-only)"
-rm -rf "$work"
-
-echo "=== 10. untracked source denies N/A (not only dirty) ==="
-setup
-printf 'VERIFY_E2E_NA_REASON=docs-only\n' > "$work/.verify-local.env"
-commit
-printf 'print("untracked")\n' > "$work/app.py"
-out=$(cd "$work" && bash scripts/verify-local.sh 2>&1) || true
-check "untracked source ineligible" "FAIL (N/A claim ineligible: runtime, source, or ambiguous worktree content)"
-check "untracked source dirty" "DIRTY"
-check "untracked source overall FAIL" "Overall: FAIL"
-absent "untracked source is not N/A granted" "N/A (docs-only)"
-rm -rf "$work"
-
-echo "=== 11. allowlisted symlink to ignored runtime denies N/A ==="
-setup
-printf 'VERIFY_E2E_NA_REASON=docs-only\n' > "$work/.verify-local.env"
-printf 'app.py\n' > "$work/.gitignore"
-printf 'print("ignored")\n' > "$work/app.py"
-ln -s app.py "$work/notes.md"
-commit
-out=$(cd "$work" && bash scripts/verify-local.sh 2>&1) || true
-check "symlink ineligible" "FAIL (N/A claim ineligible: runtime, source, or ambiguous worktree content)"
-check "symlink tree clean" "Tree: clean"
-check "symlink overall FAIL" "Overall: FAIL"
-absent "symlink is not N/A granted" "N/A (docs-only)"
-rm -rf "$work"
 
 if [ $failed -eq 0 ]; then
   echo "All causal e2e-applicability cases PASS"

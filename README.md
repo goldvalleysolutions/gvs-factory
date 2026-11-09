@@ -8,7 +8,7 @@ This repo defines a software factory: a process for turning ideas into working s
 2. **Spec.** The PM agent writes a spec. Every acceptance criterion has a Verify line that says how to check it.
 3. **Architect handoff.** The Chief architect pins standards, selects patterns, and writes the acceptance-to-test matrix before the build.
 4. **Build.** A developer agent builds on a branch, opens a pull request into `test`, and writes a build report (claims only).
-5. **Independent checks.** A Reviewer executes the matrix on the exact committed head, then four fresh isolated lenses (Security, Code, Tests and evals, UX/Consistency) judge one sanitized bundle. Any CHANGES sends the work back, up to three rounds.
+5. **Independent checks.** A Reviewer executes the matrix on the exact committed head, then four lenses (Security, Code, Tests and evals, UX/Consistency) judge one sanitized bundle. Any CHANGES sends the work back, up to three rounds. After round 3, stop; the human decides. Agents must not start round 4.
 6. **Merge to test.** When all four lenses pass, Local verification PASSes, and the test matrix was executed on the same head, an agent merges to `test`. CI only builds, publishes and deploys.
 7. **Human check.** The human gets a short ready-to-merge note, tries the change, and is the only one who merges `test` into `main`.
 
