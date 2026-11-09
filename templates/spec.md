@@ -71,6 +71,30 @@ echo 'import os' > "$d/bad.py" && ruff check "$d/bad.py"
 ```
 Expected negative output: `F401 [*] \`os\` imported but unused`, exit 1.
 
+**Missing-tool environment scaffold (shared for AC-G.1 environment):**
+Preconditions: gitleaks is installed on the real PATH; temp directory writable. Do not uninstall the real binary.
+```bash
+# Instantiate a PATH that omits gitleaks but keeps other tools from the same directory.
+bin=$(mktemp -d); np=""
+IFS=:; for d in $PATH; do
+  if [ -x "$d/gitleaks" ]; then
+    for f in "$d"/*; do
+      [ -f "$f" ] && [ -x "$f" ] || continue
+      b=$(basename "$f"); [ "$b" = gitleaks ] && continue
+      ln -sf "$f" "$bin/$b"
+    done
+    continue
+  fi
+  np="${np:+$np:}$d"
+done; unset IFS
+# Prove the intended tool is absent; retain bash/git/semgrep.
+PATH="$bin:$np" command -v gitleaks; echo "gitleaks absent, exit: $?"
+# Run verification in that PATH (no --allow-missing).
+PATH="$bin:$np" bash scripts/verify-local.sh
+# Reset: rm -rf "$bin"
+```
+Expected: `command -v gitleaks` exits 1; verify-local exits non-zero with a `FAIL (MISSING: gitleaks not installed)` row. Other applicable checks still run.
+
 - **AC-G.3** No secrets, keys, or real personal data are committed; `.env` is not committed.
   **Verify:** `git diff <base>...HEAD --name-only | grep -x .env` returns no output; a secret scan of the diff returns no findings.
   **Negative:** A scanner fixture detects a synthetic secret. `d=$(mktemp -d) && printf 'AKIA%s\n' 'IOSFODNN7TESTING' > "$d/aws.txt" && gitleaks dir "$d"` exits non-zero (rule: aws-access-token). The key is generated at runtime from parts to avoid triggering scanners on this repo.
@@ -78,8 +102,8 @@ Expected negative output: `F401 [*] \`os\` imported but unused`, exit 1.
 
 - **AC-G.4** The default configuration makes zero paid or outbound calls to real providers.
   **Verify:** the named test or check for this repo.
-  **Negative:** An outbound call is blocked at runtime. `pytest tests/test_no_network.py::test_outbound_blocked` passes, where the test uses a socket-blocking fixture (e.g., `pytest-socket` with `--disable-socket`) and a deliberate `requests.get("https://example.com")` that asserts `SocketBlockedError` is raised.
-  **Positive (clean):** `pytest tests/test_no_network.py::test_no_outbound_in_code` passes, where the test runs with the socket-blocking fixture and the actual code makes no outbound calls.
+  **Negative:** `pytest tests/test_no_network.py::test_outbound_blocked` passes (pytest-socket `--disable-socket`; a deliberate `requests.get` raises `SocketBlockedError`).
+  **Positive (clean):** `pytest tests/test_no_network.py::test_no_outbound_in_code` passes with the same fixture; the code makes no outbound calls.
 
 - **AC-G.5** Docs updated where behaviour changed (README, `AGENTS.md`, `.env.example`).
   **Verify:** `git diff <base>...HEAD --stat` lists them; the reviewer reads them.

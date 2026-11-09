@@ -22,7 +22,7 @@ A change is done when every item below is true. The PM agent checks items 1 to 1
 
 10. **Lessons recorded.** Where applicable, lessons are recorded in `templates/lessons-log.md` with source, evidence, disposition, and approval. Lessons clarifying existing requirements (type: clarification) can be applied to matrix rows and known pitfalls without approval; a clarification may only add or tighten, never remove or relax. New policy or standards changes (type: new-policy) require the human's approval and are never adopted automatically. An agent's say-so is never approval.
 
-11. **Playwright e2e suite passes (or N/A).** The repo's `tests/e2e/` Playwright suite (desktop and mobile, stub LLM) PASSes in `scripts/verify-local.sh` on the head, the Local verification block shows passes per project and the head SHA, and any new user-facing behaviour has new or updated e2e tests in this pull request. See the rule below. **N/A exception:** A repository with no application runtime, no browser UI, and no `tests/e2e/` directory (e.g., a docs-only or templates-only repo) may record "browser e2e: N/A (no application runtime)" in its Local verification block. This is recorded rationale, not a waiver of failed cases. Security scans (gitleaks, semgrep) must still be installed, execute, and pass; every other applicable check remains required.
+11. **Playwright e2e suite passes (or recorded N/A).** For application repos, the `tests/e2e/` Playwright suite PASSes in `scripts/verify-local.sh` on the head (see the rule below). For a genuinely application-free docs repository, record SKIP with rationale N/A; that is not a PASS of an e2e suite.
 
 12. **Human approval.** The human has tried the change on `test` and merged it to `main`.
 
@@ -38,3 +38,4 @@ Standing rule for core and every bot repo:
 6. The pull request's Local verification block lists the suite result (passes per project) and the head SHA.
 7. The Reviewer's evidence run includes the suite.
 8. Any new user-facing behaviour adds or updates its e2e tests in the same pull request.
+9. **N/A (narrow):** A repository with no application runtime, no browser UI, no `tests/e2e/` directory, and no configured Playwright command may record SKIP with rationale "browser e2e N/A: no application runtime". This is recorded rationale, not a PASS and not a failed-case waiver. Security scans (gitleaks, semgrep) must still be installed, execute, and pass. Every other applicable check remains required. `--allow-missing` is not acceptance.

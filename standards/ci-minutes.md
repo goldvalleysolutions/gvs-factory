@@ -11,7 +11,7 @@ Before a pull request is merged to `test`, the developer agent runs every check 
 - Lint and type checks
 - Unit tests
 - Functional tests
-- The Playwright e2e suite under `tests/e2e/` (desktop and mobile projects, stub LLM by default; screenshot and trace on every failure). It must PASS before any merge to `test`
+- The Playwright e2e suite under `tests/e2e/` (desktop and mobile projects, stub LLM by default; screenshot and trace on every failure). It must PASS before any merge to `test`, except the narrow docs-only N/A in `standards/definition-of-done.md` (recorded SKIP, not a PASS)
 - Security: gitleaks (secrets), Semgrep (free rules, `p/ci`), `npm audit` or `pip-audit` (dependencies), and Trivy (`HIGH,CRITICAL`, `--ignore-unfixed`) on every image built from a Dockerfile
 - Container checks: build each Dockerfile; when the repo has a compose file, bring the stack up and test against it
 
@@ -25,7 +25,7 @@ The factory knows no project names. Each project sets these in its `AGENTS.md` o
 |---|---|
 | `VERIFY_COMPOSE_FILE` | Compose file to use. Default: the first of `compose.yaml`, `compose.yml`, `docker-compose.yaml`, `docker-compose.yml` at the root |
 | `VERIFY_COMPOSE_TEST` | Command run against the stack: `docker compose up -d --build --wait`, the command, then `docker compose down -v` (always) |
-| `VERIFY_E2E_CMD` | End-to-end command. Default when `tests/e2e/` exists: `npx playwright test`. Runs while the stack is up, or on its own when there is no compose file. With no `tests/e2e/` and no command, the row is `FAIL`, or `SKIP` with a clear message under `--allow-missing` |
+| `VERIFY_E2E_CMD` | End-to-end command. Default when `tests/e2e/` exists: `npx playwright test`. Runs while the stack is up, or on its own when there is no compose file. With no `tests/e2e/` and no command, the row is `FAIL`. Docs-only N/A is recorded with `VERIFY_SKIP` and a rationale; do not use an echo command that reports PASS |
 | `SEMGREP_CONFIG` | Semgrep rules. Default `p/ci` |
 | `VERIFY_DIRS` | Directories to check. Default: `.` and first-level subdirectories with a project file |
 | `VERIFY_DOCKER_TARGET` | Build target for the root `Dockerfile` of each checked directory |
@@ -76,7 +76,7 @@ Overall: PASS
 
 - No Local verification block, a block with any `FAIL`, or a block on a SHA other than the pull request's head means **no merge**.
 - Any new commit needs a new block.
-- `MISSING` tools count as `FAIL` unless the gap is named in the pull request and accepted by the human.
+- `MISSING` tools count as `FAIL`. Security scanners (gitleaks, semgrep) must be installed, execute, and pass; `--allow-missing` is not acceptance. A docs-only browser e2e N/A is recorded SKIP with rationale, not a missing-tool waiver.
 - Agents merge to `test`. Only the human merges to `main`.
 
 ## 3. What CI keeps

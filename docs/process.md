@@ -76,7 +76,7 @@ Each lesson is recorded in `templates/lessons-log.md` with source, evidence, dis
 
 **Validated lesson:** A lesson with disposition "accepted" or "applied" whose type is "clarification", or whose type is "new-policy" and has a human approval link.
 
-**Clarifications apply without approval.** Lessons that clarify or test existing approved requirements (type: clarification) can be logged and applied to matrix rows and known pitfalls without the human approving each one. A clarification may only add or tighten matrix rows, never remove or relax them.
+**Clarifications apply without approval.** Lessons that clarify or test existing approved requirements (type: clarification) can be logged and applied to existing matrix rows, known pitfalls, and tests without the human approving each one. A clarification may only add or tighten, never remove or relax. Do not add factory files, roles, or gates to hold a lesson.
 
 **New policy requires the human's approval.** Lessons that propose new policy or standards changes (type: new-policy) need the human's explicit approval and are never adopted automatically. An agent's say-so is never approval. If the type is unclear, it defaults to new-policy.
 
@@ -94,11 +94,9 @@ Each lesson is recorded in `templates/lessons-log.md` with source, evidence, dis
 | Merge to `test` | Review PASS, Local verification PASS, and test matrix executed on the same commit, no unresolved flags | Developer agent |
 | Merge to `main` | The human has tested `test` and approves | Human |
 
-### Playwright e2e rule (2026-10-30)
+### Playwright e2e
 
-All user-facing testing uses Playwright. Core and every bot repo keep a committed suite under `tests/e2e/`, run on desktop and mobile with the stub LLM by default, plus one opt-in live-provider smoke test (marker or env flag, cheap model, keys never logged). Every failure saves a screenshot and a trace. `verify-local.sh` runs the suite and it must PASS before any merge to `test`; the Local verification block lists the suite result (passes per project) and the head SHA. The Reviewer's evidence run includes the suite, and any new user-facing behaviour adds or updates its e2e tests in the same pull request. Full text: `standards/definition-of-done.md`.
-
-**N/A exception:** A repository with no application runtime, no browser UI, and no `tests/e2e/` directory (e.g., a docs-only or templates-only repo) may record "browser e2e: N/A (no application runtime)" in its Local verification block. This is recorded rationale, not a waiver of failed cases. Security scans (gitleaks, semgrep) must still be installed, execute, and pass; every other applicable check remains required.
+Standing rule: `standards/definition-of-done.md`. For this factory (docs and templates only, no application runtime) browser e2e is recorded as SKIP with rationale N/A. That is not a PASS of an e2e suite and not a failed-case waiver. Security scans (gitleaks, semgrep) must still be installed, execute, and pass. Every other applicable check remains required. `--allow-missing` is not acceptance.
 
 ## 5. The four review lenses
 
@@ -111,7 +109,7 @@ Each lens gets exactly one line, `VERDICT: PASS` or `VERDICT: CHANGES`, followed
 
 ### 5a. The sanitized bundle
 
-Each lens receives exactly the sanitized bundle. It contains:
+Each lens receives exactly one sanitized bundle, indexed by the exact head SHA for that review round. Preserve original raw outputs; do not delete historical evidence when a later round starts. The bundle contains:
 
 - The PR diff.
 - The verbatim acceptance criteria text from the spec.
@@ -127,10 +125,10 @@ The sanitized bundle never contains:
 
 ### 5b. Lens isolation
 
-- First, outside the lens runs, the Reviewer executes the test matrix on the exact head and records raw outputs and environment.
-- The Reviewer then runs each of the four lenses as its own fresh, stateless run with only the sanitized bundle.
+- First, outside the lens runs, the Reviewer executes the test matrix on the exact head and records raw outputs and environment. Causal checks must show the intended cause, not only a non-zero exit.
+- The Reviewer then runs each of the four lenses as its own fresh, minimal-context session with only the sanitized bundle. Use included default models; do not spend on paid fallbacks.
 - A lens never sees another lens's output.
-- The Reviewer combines the verdict only after all four lenses have returned.
+- The Reviewer combines the verdict only after all four lenses have returned. Models are optional; the four fresh sessions are required.
 
 ### 5c. Review rules
 

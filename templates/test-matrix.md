@@ -17,9 +17,9 @@ _The Chief architect produces this matrix before the build starts. The Reviewer 
 | AC-T1.2 | positive | `curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/notes/export.csv` | HTTP 401 | | | |
 | AC-T1.2 | negative | `curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer invalid" http://localhost:8000/notes/export.csv` | HTTP 401 | | | |
 | AC-T1.2 | environment | `curl -s -o /dev/null -w "%{http_code}" http://localhost:9999/notes/export.csv` (wrong port) | connection refused or timeout | | | |
-| AC-G.1 | positive | `bash scripts/verify-local.sh --allow-missing` | exit 0, no FAIL rows | | | |
-| AC-G.1 | negative | See spec.md section 4 AC-G.1/AC-G.2 scaffold | exit non-zero, FAIL row for ruff (F401 unused import) | | | |
-| AC-G.1 | environment | `PATH=$(echo "$PATH" \| tr ':' '\n' \| grep -v gitleaks \| paste -sd:) bash scripts/verify-local.sh` | exit non-zero, output contains "MISSING: gitleaks" row | | | |
+| AC-G.1 | positive | `bash scripts/verify-local.sh` | exit 0, no FAIL rows (docs-only e2e is SKIP N/A, not PASS) | | | |
+| AC-G.1 | negative | See spec.md section 4 lint scaffold | exit non-zero, ruff reports F401 unused import | | | |
+| AC-G.1 | environment | See spec.md section 4 missing-tool scaffold | `command -v gitleaks` exits 1; verify-local exits non-zero with `FAIL (MISSING: gitleaks not installed)`; other applicable checks still run | | | |
 
 _Add rows for every acceptance criterion. Each criterion gets at least one positive, one negative, and one environment case. State expectations as expected observable behaviour (e.g., "HTTP 401", "pytest test passes asserting rejection"), not hard-coded exit codes._
 
@@ -27,8 +27,8 @@ _Add rows for every acceptance criterion. Each criterion gets at least one posit
 
 Environment cases test behaviour when:
 
-- A required tool is missing (e.g., `python3` not on PATH)
-- A dependency is not installed (e.g., missing venv, missing package)
+- A required tool is missing (assert the named `MISSING` row, not only a non-zero exit)
+- A dependency is not installed (runner still works; assert the missing-module cause)
 - Configuration is absent or malformed (e.g., no `.env`, invalid JSON)
 - The runtime differs from the build environment (e.g., different OS, different Python version)
 

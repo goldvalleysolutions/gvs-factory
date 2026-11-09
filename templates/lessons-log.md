@@ -54,7 +54,7 @@ Only validated lessons may be pulled into specs as known pitfalls. See `docs/pro
 
 ## Rules
 
-1. **Clarifications apply without approval.** Lessons that clarify or test existing approved requirements (type: clarification) can be logged and applied to matrix rows, known pitfalls, and regression checks without the human approving each one. A clarification may only add or tighten matrix rows, never remove or relax them.
+1. **Clarifications apply without approval.** Lessons that clarify or test existing approved requirements (type: clarification) can be logged and applied to existing matrix rows, known pitfalls, and tests without the human approving each one. A clarification may only add or tighten, never remove or relax. Do not add factory files, roles, or gates to hold a lesson.
 2. **New policy requires the human's approval.** Any lesson that proposes a new policy, standard, or requirement (type: new-policy) must have the human's explicit approval before adoption. Record the approval link. An agent's say-so is never approval.
 3. **New policy is never automatic.** Agents may propose new-policy lessons, but they are never adopted automatically. Only the human can approve them.
 4. **Evidence is verbatim with redaction.** Do not paraphrase or summarize the source evidence. Redact secrets, tokens, keys, `.env` values, and real personal data as `[REDACTED]` before recording.
