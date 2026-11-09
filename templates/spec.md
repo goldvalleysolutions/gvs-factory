@@ -52,11 +52,24 @@ _Each one is one observable behaviour plus how to check it, runnable by someone 
 
 - **AC-G.1** The Local verification block has no FAIL on the pull request's last commit.
   **Verify:** block in the pull request, SHA equals the head commit, no `FAIL`.
-  **Negative:** A deliberate lint error causes FAIL. `echo "import os" >> app/routes/notes.py && bash scripts/verify-local.sh` exits non-zero (unused import).
+  **Negative:** A deliberate lint error causes FAIL. Use the lint scaffold below.
 
 - **AC-G.2** Lint and format pass locally with the exact commands from `AGENTS.md`.
   **Verify:** the commands exit 0.
-  **Negative:** A deliberate lint error causes failure. `echo "import os" >> app/routes/notes.py && ruff check app/` exits non-zero (F401 unused import).
+  **Negative:** A deliberate lint error causes failure. Use the lint scaffold below.
+
+**Lint negative scaffold (shared for AC-G.1, AC-G.2):**
+Preconditions: ruff installed, temp directory writable.
+```bash
+# Instantiate
+d=$(mktemp -d) && echo -e '[tool.ruff]\nselect = ["F"]' > "$d/pyproject.toml"
+# Positive (clean): exit 0
+echo 'x = 1' > "$d/clean.py" && ruff check "$d/clean.py"
+# Negative (F401 unused import): exit non-zero
+echo 'import os' > "$d/bad.py" && ruff check "$d/bad.py"
+# Reset: rm -rf "$d"
+```
+Expected negative output: `F401 [*] \`os\` imported but unused`, exit 1.
 
 - **AC-G.3** No secrets, keys, or real personal data are committed; `.env` is not committed.
   **Verify:** `git diff <base>...HEAD --name-only | grep -x .env` returns no output; a secret scan of the diff returns no findings.

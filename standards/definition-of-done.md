@@ -22,7 +22,7 @@ A change is done when every item below is true. The PM agent checks items 1 to 1
 
 10. **Lessons recorded.** Where applicable, lessons are recorded in `templates/lessons-log.md` with source, evidence, disposition, and approval. Lessons clarifying existing requirements (type: clarification) can be applied to matrix rows and known pitfalls without approval; a clarification may only add or tighten, never remove or relax. New policy or standards changes (type: new-policy) require the human's approval and are never adopted automatically. An agent's say-so is never approval.
 
-11. **Playwright e2e suite passes.** The repo's `tests/e2e/` Playwright suite (desktop and mobile, stub LLM) PASSes in `scripts/verify-local.sh` on the head, the Local verification block shows passes per project and the head SHA, and any new user-facing behaviour has new or updated e2e tests in this pull request. See the rule below.
+11. **Playwright e2e suite passes (or N/A).** The repo's `tests/e2e/` Playwright suite (desktop and mobile, stub LLM) PASSes in `scripts/verify-local.sh` on the head, the Local verification block shows passes per project and the head SHA, and any new user-facing behaviour has new or updated e2e tests in this pull request. See the rule below. **N/A exception:** A repository with no application runtime, no browser UI, and no `tests/e2e/` directory (e.g., a docs-only or templates-only repo) may record "browser e2e: N/A (no application runtime)" in its Local verification block. This is recorded rationale, not a waiver of failed cases. Security scans (gitleaks, semgrep) must still be installed, execute, and pass; every other applicable check remains required.
 
 12. **Human approval.** The human has tried the change on `test` and merged it to `main`.
 

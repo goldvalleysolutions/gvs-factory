@@ -13,13 +13,13 @@ _The Chief architect produces this matrix before the build starts. The Reviewer 
 |---|---|---|---|---|---|---|
 | AC-T1.1 | positive | `pytest tests/test_export.py::test_export_own_notes` | exit 0, test passes | | | |
 | AC-T1.1 | negative | `pytest tests/test_export.py::test_export_empty` | exit 0, test passes asserting empty CSV with header only | | | |
-| AC-T1.1 | environment | `deactivate 2>/dev/null; pytest tests/test_export.py::test_export_own_notes` | exit non-zero, ModuleNotFoundError | | | |
+| AC-T1.1 | environment | `d=$(mktemp -d) && echo 'import nonexistent_xyz' > "$d/test_env.py" && pytest "$d/test_env.py"` | exit non-zero, ModuleNotFoundError for nonexistent_xyz (pytest runs, import fails) | | | |
 | AC-T1.2 | positive | `curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/notes/export.csv` | HTTP 401 | | | |
 | AC-T1.2 | negative | `curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer invalid" http://localhost:8000/notes/export.csv` | HTTP 401 | | | |
 | AC-T1.2 | environment | `curl -s -o /dev/null -w "%{http_code}" http://localhost:9999/notes/export.csv` (wrong port) | connection refused or timeout | | | |
 | AC-G.1 | positive | `bash scripts/verify-local.sh --allow-missing` | exit 0, no FAIL rows | | | |
-| AC-G.1 | negative | `echo "import os" >> app/routes/notes.py && bash scripts/verify-local.sh --allow-missing` | exit non-zero, FAIL row for ruff (F401) | | | |
-| AC-G.1 | environment | `PATH=/nonexistent:$PATH bash scripts/verify-local.sh` | exit non-zero, MISSING rows | | | |
+| AC-G.1 | negative | See spec.md section 4 AC-G.1/AC-G.2 scaffold | exit non-zero, FAIL row for ruff (F401 unused import) | | | |
+| AC-G.1 | environment | `(gitleaks() { return 127; }; export -f gitleaks; bash scripts/verify-local.sh)` | exit non-zero, output contains "MISSING: gitleaks" row | | | |
 
 _Add rows for every acceptance criterion. Each criterion gets at least one positive, one negative, and one environment case. State expectations as expected observable behaviour (e.g., "HTTP 401", "pytest test passes asserting rejection"), not hard-coded exit codes._
 

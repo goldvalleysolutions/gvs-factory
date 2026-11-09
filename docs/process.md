@@ -98,6 +98,8 @@ Each lesson is recorded in `templates/lessons-log.md` with source, evidence, dis
 
 All user-facing testing uses Playwright. Core and every bot repo keep a committed suite under `tests/e2e/`, run on desktop and mobile with the stub LLM by default, plus one opt-in live-provider smoke test (marker or env flag, cheap model, keys never logged). Every failure saves a screenshot and a trace. `verify-local.sh` runs the suite and it must PASS before any merge to `test`; the Local verification block lists the suite result (passes per project) and the head SHA. The Reviewer's evidence run includes the suite, and any new user-facing behaviour adds or updates its e2e tests in the same pull request. Full text: `standards/definition-of-done.md`.
 
+**N/A exception:** A repository with no application runtime, no browser UI, and no `tests/e2e/` directory (e.g., a docs-only or templates-only repo) may record "browser e2e: N/A (no application runtime)" in its Local verification block. This is recorded rationale, not a waiver of failed cases. Security scans (gitleaks, semgrep) must still be installed, execute, and pass; every other applicable check remains required.
+
 ## 5. The four review lenses
 
 Each lens gets exactly one line, `VERDICT: PASS` or `VERDICT: CHANGES`, followed by findings (`path:line`, problem, impact, fix) and non-blocking notes.
