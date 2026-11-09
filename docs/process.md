@@ -96,7 +96,7 @@ Each lesson is recorded in `templates/lessons-log.md` with source, evidence, dis
 
 ### Playwright e2e
 
-Standing rule: `standards/definition-of-done.md`. `scripts/verify-local.sh` records native N/A only when `VERIFY_E2E_NA_REASON` is set and the repo has no application runtime, no compose file, no `tests/e2e/`, and no `VERIFY_E2E_CMD`. An ineligible or missing rationale is FAIL. That is not a PASS of an e2e suite and not a waiver of a failed check. Security scans (gitleaks, semgrep) must still be installed, execute, and pass; they cannot be skipped. `--allow-missing` is not acceptance.
+Standing rule: `standards/definition-of-done.md`. `scripts/verify-local.sh` records native N/A only when `VERIFY_E2E_NA_REASON` is set, the repo has no application runtime, compose, `tests/e2e/`, or `VERIFY_E2E_CMD`, and every tracked file matches a finite docs/tooling allowlist. Unknown or source files fail closed. An ineligible or missing rationale is FAIL. That is not a PASS of an e2e suite and not a waiver of a failed check. Security scans (gitleaks, semgrep) must still be installed, execute, and pass; they cannot be skipped. `--allow-missing` is not acceptance.
 
 ## 5. The four review lenses
 

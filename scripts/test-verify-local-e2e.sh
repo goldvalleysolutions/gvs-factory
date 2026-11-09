@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Causal cases for native docs-only e2e N/A in verify-local.sh.
+# Applicability regression probes for native docs-only e2e N/A in verify-local.sh.
+# Stubbed npx/semgrep here prove wiring only. They are not browser evidence and
+# do not replace installed gitleaks/semgrep on the factory HEAD.
 # Run from the factory repo: bash scripts/test-verify-local-e2e.sh
 set -u
 FACTORY=$(git rev-parse --show-toplevel) || exit 2
@@ -49,6 +51,7 @@ out=$(cd "$work" && bash scripts/verify-local.sh 2>&1) || true
 check "eligible N/A row" "N/A (no application runtime, docs-only)"
 check "eligible overall PASS" "Overall: PASS"
 absent "eligible is not echo PASS" "echo '"
+absent "eligible is not SKIP N/A" "SKIP (browser e2e"
 rm -rf "$work"
 
 echo "=== 2. configured command stays applicable ==="
@@ -60,30 +63,51 @@ check "configured command ran" "| \`true\` | PASS |"
 absent "configured command is not N/A" "playwright e2e"
 rm -rf "$work"
 
-echo "=== 3. suite stays applicable ==="
+echo "=== 3. suite stays applicable (stub npx, not browser evidence) ==="
 setup
 mkdir -p "$work/tests/e2e"
 echo "placeholder" > "$work/tests/e2e/placeholder.spec.ts"
 commit
 bindir=$(mktemp -d)
-printf '#!/bin/sh\necho fake-npx\nexit 1\n' > "$bindir/npx"
+printf '#!/bin/sh\necho stub-npx-not-browser-evidence\nexit 1\n' > "$bindir/npx"
 chmod +x "$bindir/npx"
 out=$(cd "$work" && PATH="$bindir:$PATH" bash scripts/verify-local.sh 2>&1) || true
 check "suite invoked playwright" "npx playwright test"
 absent "suite is not N/A" "N/A ("
+absent "suite stub is not browser PASS" "desktop "
 rm -rf "$work" "$bindir"
 
-echo "=== 4. ambiguous N/A claim fails ==="
+echo "=== 4. compose stays applicable ==="
 setup
 printf 'VERIFY_E2E_NA_REASON=docs-only\n' > "$work/.verify-local.env"
-echo "FROM scratch" > "$work/Dockerfile"
+printf 'services: {}\n' > "$work/compose.yaml"
 commit
-out=$(cd "$work" && bash scripts/verify-local.sh --allow-missing 2>&1) || true
-check "ambiguous ineligible" "FAIL (N/A claim ineligible: application runtime, tests/e2e, or configured command)"
-absent "ambiguous is not N/A granted" "N/A (docs-only)"
+out=$(cd "$work" && bash scripts/verify-local.sh 2>&1) || true
+check "compose ineligible" "FAIL (N/A claim ineligible: runtime, source, or ambiguous tracked content)"
+absent "compose is not N/A granted" "N/A (docs-only)"
 rm -rf "$work"
 
-echo "=== 5. missing scanner fails even with --allow-missing ==="
+echo "=== 5. non-manifest app source fails closed ==="
+setup
+printf 'VERIFY_E2E_NA_REASON=docs-only\n' > "$work/.verify-local.env"
+printf 'print("app")\n' > "$work/app.py"
+mkdir -p "$work/src"
+printf 'print("main")\n' > "$work/src/main.py"
+commit
+out=$(cd "$work" && bash scripts/verify-local.sh 2>&1) || true
+check "source ineligible" "FAIL (N/A claim ineligible: runtime, source, or ambiguous tracked content)"
+absent "source is not N/A granted" "N/A (docs-only)"
+rm -rf "$work"
+
+echo "=== 6. missing rationale fails closed ==="
+setup
+commit
+out=$(cd "$work" && bash scripts/verify-local.sh 2>&1) || true
+check "missing rationale FAIL" "FAIL (no tests/e2e/ and no VERIFY_E2E_CMD; docs-only N/A requires VERIFY_E2E_NA_REASON and no application runtime)"
+absent "missing rationale is not N/A" "N/A ("
+rm -rf "$work"
+
+echo "=== 7. missing scanner fails even with --allow-missing ==="
 setup
 printf 'VERIFY_E2E_NA_REASON=no application runtime, docs-only\n' > "$work/.verify-local.env"
 commit
@@ -105,6 +129,19 @@ out=$(cd "$work" && PATH="$bin:$np" bash scripts/verify-local.sh --allow-missing
 check "missing gitleaks is FAIL" "FAIL (MISSING: gitleaks not installed)"
 absent "missing gitleaks not skipped" "SKIP (MISSING: gitleaks"
 rm -rf "$work" "$bin"
+
+echo "=== 8. failing scanner is FAIL (stub semgrep, not a real scan) ==="
+setup
+printf 'VERIFY_E2E_NA_REASON=no application runtime, docs-only\n' > "$work/.verify-local.env"
+commit
+bindir=$(mktemp -d)
+printf '#!/bin/sh\necho stub-semgrep-fail-not-a-real-scan\nexit 1\n' > "$bindir/semgrep"
+chmod +x "$bindir/semgrep"
+out=$(cd "$work" && PATH="$bindir:$PATH" bash scripts/verify-local.sh 2>&1) || true
+check "failing semgrep is FAIL" "| \`semgrep scan --config p/ci --error\` | FAIL"
+check "failing scanner overall FAIL" "Overall: FAIL"
+absent "failing scanner not skipped" "SKIP (MISSING: semgrep"
+rm -rf "$work" "$bindir"
 
 if [ $failed -eq 0 ]; then
   echo "All causal e2e-applicability cases PASS"
