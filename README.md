@@ -22,6 +22,7 @@ The full process is in `docs/process.md`.
 LICENSE
 NOTICE
 README.md
+AGENTS.md                 pointers to process, DoD, and verify-local.sh
 docs/
   process.md              the process: roles, flow, gates, review lenses, rework and merge rules
 standards/

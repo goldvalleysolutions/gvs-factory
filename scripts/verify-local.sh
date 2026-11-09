@@ -6,20 +6,24 @@
 #        VERIFY_COMPOSE_FILE=compose.yaml  compose file (default: auto-detect compose.yaml/yml, docker-compose.yaml/yml at the root)
 #        VERIFY_COMPOSE_TEST="cmd"  run cmd against the stack (docker compose up -d --wait ... down -v)
 #        VERIFY_E2E_CMD="cmd"  end-to-end command; default "npx playwright test" when tests/e2e/ exists; runs while the compose stack is up, if any
-#          (no tests/e2e/ and no VERIFY_E2E_CMD: FAIL, or SKIP with --allow-missing)
+#          (no tests/e2e/ and no VERIFY_E2E_CMD: FAIL unless native docs-only N/A below)
 #          (COMPOSE_PROJECT_NAME and COMPOSE_FILE are exported to both, so inner `docker compose` calls hit the stack)
+#        VERIFY_E2E_NA_REASON="text"  native docs-only N/A. Accepted only when there is no application
+#          runtime (no detected project dirs, no compose), no tests/e2e/, and no VERIFY_E2E_CMD.
+#          Ineligible or missing rationale is FAIL. Not a skip of a failed check.
 #        VERIFY_DOCKER_TARGET=app  build target for ./Dockerfile; VERIFY_DOCKERFILES="Dockerfile.worker"  extra Dockerfiles
 #        VERIFY_DOCKER_BUILD_ARGS="--network host"  extra flags for docker build (not compose)
 #        VERIFY_SKIP="mypy"  checks to skip (first word or full label); reason: VERIFY_SKIP_REASON
+#          (gitleaks and semgrep are never skipped)
 #        A repo may set any VERIFY_* / SEMGREP_CONFIG in .verify-local.env (KEY=VALUE lines; the environment wins)
-# Exit:  non-zero if any check FAILs, a required tool is MISSING (without --allow-missing), or the tree is dirty.
+# Exit:  non-zero if any check FAILs, a required tool is MISSING, or the tree is dirty.
 set -u
 
 ALLOW_MISSING=0
 for arg in "$@"; do
   case "$arg" in
     --allow-missing) ALLOW_MISSING=1 ;;
-    -h|--help) sed -n '2,15p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,19p' "$0"; exit 0 ;;
     *) echo "unknown argument: $arg" >&2; exit 2 ;;
   esac
 done
@@ -56,13 +60,16 @@ log_name() {
   printf '%s-%s' "$slug" "$hash"
 }
 
-# run <dir> <label> <command...>
+# run <dir> <label> [--required] <command...>
 run() {
   local dir=$1 label=$2; shift 2
-  local start end rc logf k
-  for k in "${SKIPS[@]}"; do
-    if [ "$k" = "${label%% *}" ] || [ "$k" = "$label" ]; then skip "$dir" "$label" "$SKIP_REASON"; return 0; fi
-  done
+  local required=0 start end rc logf k
+  if [ "${1:-}" = --required ]; then required=1; shift; fi
+  if [ $required -eq 0 ]; then
+    for k in "${SKIPS[@]}"; do
+      if [ "$k" = "${label%% *}" ] || [ "$k" = "$label" ]; then skip "$dir" "$label" "$SKIP_REASON"; return 0; fi
+    done
+  fi
   logf="$LOG_DIR/$(log_name "$dir-$label").log"
   start=$(date +%s)
   ( cd "$dir" && "$@" ) >"$logf" 2>&1
@@ -208,22 +215,29 @@ fi
 if [ -n "${VERIFY_E2E_CMD:-}" ]; then
   if [ -n "$COMPOSE_FILE_FOUND" ] && [ $STACK_UP -eq 0 ]; then skip . "$VERIFY_E2E_CMD" "compose stack not up"
   else run . "$VERIFY_E2E_CMD" bash -c "$VERIFY_E2E_CMD"; fi
-elif [ $ALLOW_MISSING -eq 1 ]; then
-  add_row "playwright e2e (tests/e2e/)" "SKIP (no tests/e2e/ in this repo and VERIFY_E2E_CMD not set; allowed by --allow-missing)" "0s"
+elif [ -n "${VERIFY_E2E_NA_REASON:-}" ]; then
+  if [ ${#DIRS[@]} -eq 0 ] && [ -z "$COMPOSE_FILE_FOUND" ] && [ ! -d tests/e2e ]; then
+    add_row "playwright e2e" "N/A ($VERIFY_E2E_NA_REASON)" "0s"
+  else
+    add_row "playwright e2e" "FAIL (N/A claim ineligible: application runtime, tests/e2e, or configured command)" "0s"
+    FAILED=1
+  fi
 else
-  add_row "playwright e2e (tests/e2e/)" "FAIL (no tests/e2e/ in this repo and VERIFY_E2E_CMD not set; add the suite or pass --allow-missing)" "0s"; FAILED=1
+  add_row "playwright e2e (tests/e2e/)" "FAIL (no tests/e2e/ and no VERIFY_E2E_CMD; docs-only N/A requires VERIFY_E2E_NA_REASON and no application runtime)" "0s"
+  FAILED=1
 fi
 if [ -n "${COMPOSE+x}" ]; then
   # Always tear down, even after a failed up or test.
   run . "docker compose down -v" "${COMPOSE[@]}" down -v --remove-orphans
 fi
 
-# Repo-wide security scans
-if have gitleaks; then run . "gitleaks dir ." gitleaks dir . --redact --no-banner; else missing gitleaks; fi
+# Repo-wide security scans (never skipped; missing or failing scanners are FAIL)
+if have gitleaks; then run . "gitleaks dir ." --required gitleaks dir . --redact --no-banner
+else add_row "gitleaks" "FAIL (MISSING: gitleaks not installed)" "0s"; FAILED=1; fi
 # Semgrep free registry rules. p/ci works with metrics off (--config auto requires metrics on).
 SEMGREP_CONFIG=${SEMGREP_CONFIG:-p/ci}
-if have semgrep; then run . "semgrep scan --config $SEMGREP_CONFIG --error" semgrep scan --config "$SEMGREP_CONFIG" --error --quiet --metrics=off --disable-version-check
-else missing semgrep; fi
+if have semgrep; then run . "semgrep scan --config $SEMGREP_CONFIG --error" --required semgrep scan --config "$SEMGREP_CONFIG" --error --quiet --metrics=off --disable-version-check
+else add_row "semgrep" "FAIL (MISSING: semgrep not installed)" "0s"; FAILED=1; fi
 
 [ $DIRTY -eq 1 ] && FAILED=1
 

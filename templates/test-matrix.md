@@ -17,7 +17,7 @@ _The Chief architect produces this matrix before the build starts. The Reviewer 
 | AC-T1.2 | positive | `curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/notes/export.csv` | HTTP 401 | | | |
 | AC-T1.2 | negative | `curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer invalid" http://localhost:8000/notes/export.csv` | HTTP 401 | | | |
 | AC-T1.2 | environment | `curl -s -o /dev/null -w "%{http_code}" http://localhost:9999/notes/export.csv` (wrong port) | connection refused or timeout | | | |
-| AC-G.1 | positive | `bash scripts/verify-local.sh` | exit 0, no FAIL rows (docs-only e2e is SKIP N/A, not PASS) | | | |
+| AC-G.1 | positive | `bash scripts/verify-local.sh` | exit 0, no FAIL rows (docs-only e2e is native N/A, not PASS) | | | |
 | AC-G.1 | negative | See spec.md section 4 lint scaffold | exit non-zero, ruff reports F401 unused import | | | |
 | AC-G.1 | environment | See spec.md section 4 missing-tool scaffold | `command -v gitleaks` exits 1; verify-local exits non-zero with `FAIL (MISSING: gitleaks not installed)`; other applicable checks still run | | | |
 

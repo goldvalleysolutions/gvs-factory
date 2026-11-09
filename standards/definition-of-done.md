@@ -22,7 +22,7 @@ A change is done when every item below is true. The PM agent checks items 1 to 1
 
 10. **Lessons recorded.** Where applicable, lessons are recorded in `templates/lessons-log.md` with source, evidence, disposition, and approval. Lessons clarifying existing requirements (type: clarification) can be applied to matrix rows and known pitfalls without approval; a clarification may only add or tighten, never remove or relax. New policy or standards changes (type: new-policy) require the human's approval and are never adopted automatically. An agent's say-so is never approval.
 
-11. **Playwright e2e suite passes (or recorded N/A).** For application repos, the `tests/e2e/` Playwright suite PASSes in `scripts/verify-local.sh` on the head (see the rule below). For a genuinely application-free docs repository, record SKIP with rationale N/A; that is not a PASS of an e2e suite.
+11. **Playwright e2e suite passes (or recorded N/A).** For application repos, the `tests/e2e/` Playwright suite PASSes in `scripts/verify-local.sh` on the head (see the rule below). For a genuinely application-free docs repository, the native N/A row records the rationale; that is not a PASS of an e2e suite and never uses invented desktop/mobile counts.
 
 12. **Human approval.** The human has tried the change on `test` and merged it to `main`.
 
@@ -38,4 +38,4 @@ Standing rule for core and every bot repo:
 6. The pull request's Local verification block lists the suite result (passes per project) and the head SHA.
 7. The Reviewer's evidence run includes the suite.
 8. Any new user-facing behaviour adds or updates its e2e tests in the same pull request.
-9. **N/A (narrow):** A repository with no application runtime, no browser UI, no `tests/e2e/` directory, and no configured Playwright command may record SKIP with rationale "browser e2e N/A: no application runtime". This is recorded rationale, not a PASS and not a failed-case waiver. Security scans (gitleaks, semgrep) must still be installed, execute, and pass. Every other applicable check remains required. `--allow-missing` is not acceptance.
+9. **N/A (narrow):** A repository with no application runtime, no browser UI, no `tests/e2e/` directory, and no configured e2e command may set `VERIFY_E2E_NA_REASON` so `scripts/verify-local.sh` records native N/A. An ineligible claim (app runtime, suite, or configured command) is FAIL. This is recorded rationale, not a PASS and not a failed-case waiver. Security scans (gitleaks, semgrep) must still be installed, execute, and pass; they cannot be skipped. Every other applicable check remains required. `--allow-missing` is not acceptance.
