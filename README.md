@@ -14,7 +14,7 @@ This repo defines a software factory: a process for turning ideas into working s
 
 Money, auth and permissions, deploys, database changes, messages to real people, new dependencies, public exposure and business decisions are always flagged for the human.
 
-The full process is in `docs/process.md`.
+The full process is in `docs/process.md`. Other repos consume it via `docs/adopt.md`: pin factory `main` once per task, do not copy process files.
 
 ## Repo layout
 
@@ -25,6 +25,7 @@ README.md
 AGENTS.md                 pointers to process, DoD, and verify-local.sh
 docs/
   process.md              the process: roles, flow, gates, review lenses, rework and merge rules
+  adopt.md                entry point for consuming repos (pin main per task)
 standards/
   ci-minutes.md           local verification and the little CI that remains
   definition-of-done.md   when a change counts as done
