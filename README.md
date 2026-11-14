@@ -1,6 +1,6 @@
 # Gold Valley Solutions Software Factory
 
-This repo defines a software factory: a process for turning ideas into working software with a team of AI agents and one human approver. It holds the process, the templates each step uses, and a few generic standards. It contains no project code.
+This repo defines a software factory: a process for turning ideas into working software with a team of AI agents and one human approver. It holds the process, the templates each step uses, and shared standards (architecture, packaging, brand and style). It contains no project code. Consuming repos pin factory `main` once per task via `docs/adopt.md`; they do not copy these files.
 
 ## How it works
 
@@ -14,7 +14,7 @@ This repo defines a software factory: a process for turning ideas into working s
 
 Money, auth and permissions, deploys, database changes, messages to real people, new dependencies, public exposure and business decisions are always flagged for the human.
 
-The full process is in `docs/process.md`. Other repos consume it via `docs/adopt.md`: pin factory `main` once per task, do not copy process files.
+The full process is in `docs/process.md`. Other repos consume it via `docs/adopt.md`: pin factory `main` once per task for process and shared standards; do not copy those files.
 
 ## Repo layout
 
@@ -22,11 +22,14 @@ The full process is in `docs/process.md`. Other repos consume it via `docs/adopt
 LICENSE
 NOTICE
 README.md
-AGENTS.md                 pointers to process, DoD, and verify-local.sh
+AGENTS.md                 pointers to process, DoD, standards, and verify-local.sh
 docs/
   process.md              the process: roles, flow, gates, review lenses, rework and merge rules
-  adopt.md                entry point for consuming repos (pin main per task)
+  adopt.md                entry point for consuming repos (pin main for process and shared standards)
 standards/
+  bot-architecture.md     one image per bot, Core packaging and security (standards/bot-architecture.md)
+  readme-template.md      standard bot README (standards/readme-template.md)
+  brand-and-style.md      brand tokens, diagrams, site/blog (standards/brand-and-style.md)
   ci-minutes.md           local verification and the little CI that remains
   definition-of-done.md   when a change counts as done
 templates/

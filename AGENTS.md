@@ -16,6 +16,9 @@ bash scripts/verify-local.sh
 
 - Process: `docs/process.md`
 - Definition of done: `standards/definition-of-done.md`
+- Bot architecture and Core packaging: `standards/bot-architecture.md`
+- Bot README template: `standards/readme-template.md`
+- Brand, diagrams, site/blog: `standards/brand-and-style.md`
 - Local verification: `standards/ci-minutes.md`, `scripts/verify-local.sh`
 - Native docs-only browser e2e N/A: `VERIFY_E2E_NA_REASON` in `.verify-local.env`, eligibility in `scripts/verify-local.sh`
-- Consuming repos: `docs/adopt.md` (pin factory `main` at task start; do not copy process)
+- Consuming repos: `docs/adopt.md` (pin factory `main` at task start for process and shared standards; do not copy)
