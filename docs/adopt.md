@@ -25,8 +25,6 @@ Do not move to a newer `main` mid-task. The next task resolves `main` again and 
 
 If `gvs-factory` is missing, private, or unreadable at that SHA, **FAIL explicitly**. Do not skip spec, architect handoff, test matrix, local verification, four lenses, or the 3-round cap.
 
-This adoption task recorded factory `main` at start as `23818d44f0646bd2d2a61a3f6cd19810834fa5a4`. That pin applies to this task only.
-
 There is no auto-updater, service, or worktree product.
 
 ## What to follow (read at the pinned SHA)
