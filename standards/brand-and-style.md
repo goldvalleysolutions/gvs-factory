@@ -43,14 +43,15 @@ Every approved exception, with what it is, where it's used, why, who approved it
 | E2 | White label on brand-gold buttons (known contrast gap, about 2.0:1) | Primary gold buttons, site and bots | Brand look; Mike will reevaluate with Marketing after testing | Mike (Known gap section) | Before 2026-11-16 |
 | E3 | Light gold box: brand token at 20% fill with a 2px brand border, ink text | "What you need" box on Claude: Putting It to Work how-tos (`.blog-needs`) | Mike asked for a yellow box that follows the slide branding | Mike | 2026-11-16 |
 | E4 | Same light gold box reused for the standing "What Not to Paste, What You Still Approve" box | Claude: Putting It to Work Articles 3-9 (`.blog-standing-box`) | Marketing reused the E3 style so the safety box stands out | [PROPOSED] | 2026-11-16 |
-| E5 | `#EDAA4B` as small text on white for series and article card dates (instead of E1) | Thoughts and Home series/article tiles | Matches the tile icon gold | Mike (his commit `1687622` on www `test`) | 2026-11-16 |
+| E5 | Standard gold `#EDAA4B` as small text on white for series and article card dates (instead of E1) | Thoughts and Home series/article tiles | Mike: "gold tile dates - make them the standard gold"; matches the tile icon gold | Approved by Mike 2026-11-16 (standard gold `#EDAA4B`; first set in his commit `1687622` on www `test`) | 2026-11-16 |
 | E6 | Series tile tint: brand token at 8% fill, 40% border | Thoughts and Home series tiles | Softer series cards | Mike (commit `1687622`) | 2026-11-16 |
 | E7 | Other tint strengths of the brand token: fills at 10%, 20%, 30%; borders at 30%, 40%, 55%, 60% | Home and project chips, worked-example label, series TOC current item, project details, hosting card, gold `<mark>` highlight (30%) | Grew up page by page | [PROPOSED] (suggest consolidating to two steps: one fill, one border) | 2026-11-16 |
 | E8 | Logo accents `#FF914D` / `#FFBE59` | Logo image only | Logo artwork | Mike (settled Brand tokens table) | Before 2026-11-16 |
-| E9 | Connector hairline and arrowheads `#D99A3A` (deeper gold) | O2-style connectors in article and website diagrams (website: `1-chatbot.svg`, `4-ga4-mcp-dark.svg`, software factory diagram, D2 flow themes); Claude: Putting It to Work and Agent Foundations diagram PNGs | A 1.25px line in `#EDAA4B` fades on white | [PROPOSED] (Mike chose the O2 style on Nov 15; the shade wasn't separately approved, and it conflicts with "Arrows slate" below) | 2026-11-15 |
+| E9 | Resolved, not an exception: connector hairlines and arrowheads use standard gold `#EDAA4B`. The deeper gold `#D99A3A` is retired | Was: O2-style connectors in website diagrams (`1-chatbot.svg`, `4-ga4-mcp-dark.svg`, software factory diagram, D2 flow themes) and Claude: Putting It to Work and Agent Foundations diagram PNGs. All switched to `#EDAA4B` in www PR #80 | Mike: "For arrows, also go with standard gold" | Rejected by Mike 2026-11-16 (use standard gold) | 2026-11-16 |
 | E10 | Bullet markers in `#9A6700` inside the light gold box | `.blog-needs` list markers | `#EDAA4B` bullets disappear on the gold tint | [PROPOSED] | 2026-11-16 |
 | E11 | Cream person fill `#FDF7ED` in D2 light diagrams | `frontend/diagrams/gvs-theme-light.d2`, `1-chatbot.svg` | Light fill for the "You" shape | [PROPOSED] (suggest the brand token at a logged tint) | Before 2026-11-16 |
 | E12 | Form success message: `#EDAA4B` text on a gold tint | Website contact form success state (`.form-status.success`) | Pre-existing | [PROPOSED] (breaks E1; suggest `#9A6700` or ink text) | Before 2026-11-16 |
+| E13 | Standard gold `#EDAA4B` as body text for one called-out sentence, no background (instead of E1) | Agent Foundations 3, "That is work we can do when a ready-made connector is not available." (`<span class="text-brand">`); replaced the gold `<mark>` highlight | Mike: "use the gold color for the text itself" | Approved by Mike 2026-11-16 | 2026-11-16 |
 
 **Voice:** plain, no hype, no invented numbers; approval steps visible. Public CTAs are "Send a message" / "Request a call" or the site's "Let's Talk". No phone numbers in blog or README body copy. Marketing reviews each release kit before anything goes public.
 
@@ -69,7 +70,7 @@ Binding rules:
 - Light background; gold means the person; the person is always "You", never a name.
 - Green = safe, red = risk, never decoration.
 - Inter; one idea per graphic.
-- Arrows slate `#475569` with small filled triangle arrowheads that stay proportional to the line, never visually dominant.
+- Connectors (hairlines and arrowheads) use brand gold `#EDAA4B` (Mike, 2026-11-16), about 1.25px at the article display width, with small filled triangle arrowheads that stay proportional to the line, never visually dominant. Connector labels stay slate `#475569`.
 - No em or en dashes in reader-facing graphic text.
 - Alt text is the path in plain sentences plus the takeaway.
 - In article graphics, every text string must render at or below the article body size (`<= 16px` on goldvalleysolutions.com Thoughts posts). Verify by measuring at 1280 and 390 CSS px widths. Slide decks may still use slide-column sizes.
