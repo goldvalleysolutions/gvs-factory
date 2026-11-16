@@ -6,8 +6,8 @@ Settled rules for Gold Valley public and product surfaces. Consuming repos pin f
 
 | Token | Value | Notes |
 |---|---|---|
-| Brand gold | `#EDAA4B` | Buttons, fills, borders. Logo accents `#FF914D` / `#FFBE59` are not alternate button golds. |
-| Gold text on white or cream | `#9A6700` | Never use `#EDAA4B` as text on white or cream (contrast ~2.0:1). |
+| Brand gold | `#EDAA4B` | The one gold for icons and every gold accent: buttons, fills, borders, rules, bullets, highlights. Use it through a single token (see "One brand gold" below). Logo accents `#FF914D` / `#FFBE59` are not alternate golds. |
+| Gold text on white or cream | `#9A6700` | Text only. Never use `#EDAA4B` as text on white or cream (contrast ~2.0:1). Never use `#9A6700` for icons or accents. |
 | Ink | `#0F172A` / `#111827` | Titles and body on light surfaces; text on gold steps. |
 | White | `#FFFFFF` | Page and light fills. |
 | Text on light | `#0F172A` | |
@@ -16,6 +16,41 @@ Settled rules for Gold Valley public and product surfaces. Consuming repos pin f
 | Type | Inter 300-700 | |
 | Icons | Bootstrap Icons 1.11.3 | |
 | Logo | https://www.goldvalleysolutions.com/assets/images/logo.png | |
+
+### One brand gold
+
+Consistency is the point of this guide. Gold must look the same everywhere.
+
+- **Icons and gold accents use `#EDAA4B`, and only `#EDAA4B`.** This covers icons, buttons, fills, borders, rules, bullets, carousel dots, highlights and diagram fills. Don't use mustard, amber, yellow or any other gold.
+- **Use it through one token, never a pasted hex.** On the website that's the `--gvs-gold-rgb` CSS variable, which Tailwind's `brand` color reads (`text-brand`, `bg-brand`, `border-brand`). Bots and other surfaces define one equivalent token.
+- **Tints are the token with opacity** (for example `bg-brand/20`), never a new hex.
+- **Gold text on white or cream** uses the gold-text token (`#9A6700`), and only for text.
+- **Logo colors** (`#FF914D`, `#FFBE59`) stay inside the logo.
+- **Enforce it with a test where you can.** The website's `frontend/tests/brand-gold.test.js` fails on any gold or yellow hex, raw `rgb(237, 170, 75)` or Tailwind `amber`/`yellow`/`orange` utility that isn't the token or a logged exception.
+- **Every deviation is an exception.** It needs Mike's approval first and an entry in the Exceptions log below.
+
+### Deviations: ask Mike first
+
+This applies to gold and to every other rule in this file. Anyone (person or agent) who wants to deviate from a rule here must ask Mike first, and must not ship the deviation until he approves. After approval, add the exception to the Exceptions log. An exception that isn't in the log isn't approved. An entry marked `[PROPOSED]` is a known deviation that Mike hasn't approved yet. Keep it as is or fix it, but don't spread it to new places.
+
+### Exceptions log
+
+Every approved exception, with what it is, where it's used, why, who approved it and when. `[PROPOSED]` means Mike hasn't approved it yet.
+
+| # | Exception | Where used | Why | Approved by | Date |
+|---|---|---|---|---|---|
+| E1 | Gold text `#9A6700` on white or cream (instead of `#EDAA4B`) | Website text links, kickers, post dates, series TOC titles (`text-brand-dark`); small gold labels in article graphics | `#EDAA4B` text on white is about 2.0:1 and unreadable | Mike (settled Brand tokens table) | Before 2026-11-16 |
+| E2 | White label on brand-gold buttons (known contrast gap, about 2.0:1) | Primary gold buttons, site and bots | Brand look; Mike will reevaluate with Marketing after testing | Mike (Known gap section) | Before 2026-11-16 |
+| E3 | Light gold box: brand token at 20% fill with a 2px brand border, ink text | "What you need" box on Claude: Putting It to Work how-tos (`.blog-needs`) | Mike asked for a yellow box that follows the slide branding | Mike | 2026-11-16 |
+| E4 | Same light gold box reused for the standing "What Not to Paste, What You Still Approve" box | Claude: Putting It to Work Articles 3-9 (`.blog-standing-box`) | Marketing reused the E3 style so the safety box stands out | [PROPOSED] | 2026-11-16 |
+| E5 | `#EDAA4B` as small text on white for series and article card dates (instead of E1) | Thoughts and Home series/article tiles | Matches the tile icon gold | Mike (his commit `1687622` on www `test`) | 2026-11-16 |
+| E6 | Series tile tint: brand token at 8% fill, 40% border | Thoughts and Home series tiles | Softer series cards | Mike (commit `1687622`) | 2026-11-16 |
+| E7 | Other tint strengths of the brand token: fills at 10%, 20%, 30%; borders at 30%, 40%, 55%, 60% | Home and project chips, worked-example label, series TOC current item, project details, hosting card, gold `<mark>` highlight (30%) | Grew up page by page | [PROPOSED] (suggest consolidating to two steps: one fill, one border) | 2026-11-16 |
+| E8 | Logo accents `#FF914D` / `#FFBE59` | Logo image only | Logo artwork | Mike (settled Brand tokens table) | Before 2026-11-16 |
+| E9 | Connector hairline and arrowheads `#D99A3A` (deeper gold) | O2-style connectors in article and website diagrams (website: `1-chatbot.svg`, `4-ga4-mcp-dark.svg`, software factory diagram, D2 flow themes); Claude: Putting It to Work and Agent Foundations diagram PNGs | A 1.25px line in `#EDAA4B` fades on white | [PROPOSED] (Mike chose the O2 style on Nov 15; the shade wasn't separately approved, and it conflicts with "Arrows slate" below) | 2026-11-15 |
+| E10 | Bullet markers in `#9A6700` inside the light gold box | `.blog-needs` list markers | `#EDAA4B` bullets disappear on the gold tint | [PROPOSED] | 2026-11-16 |
+| E11 | Cream person fill `#FDF7ED` in D2 light diagrams | `frontend/diagrams/gvs-theme-light.d2`, `1-chatbot.svg` | Light fill for the "You" shape | [PROPOSED] (suggest the brand token at a logged tint) | Before 2026-11-16 |
+| E12 | Form success message: `#EDAA4B` text on a gold tint | Website contact form success state (`.form-status.success`) | Pre-existing | [PROPOSED] (breaks E1; suggest `#9A6700` or ink text) | Before 2026-11-16 |
 
 **Voice:** plain, no hype, no invented numbers; approval steps visible. Public CTAs are "Send a message" / "Request a call" or the site's "Let's Talk". No phone numbers in blog or README body copy. Marketing reviews each release kit before anything goes public.
 
