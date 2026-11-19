@@ -83,6 +83,7 @@ Distill palette and rules here; do not vendor `gvsdiagram.py`, fonts, or PNG exa
 From `www.goldvalleysolutions.com` `AGENTS.md` on `test`, Mike's Nov 11 Thoughts decision, and Mike's Nov 13 confirmations:
 
 - Blog posts have no phone numbers, contact details, or pricing. Link to `/#contact` or the relevant service or portfolio page.
+- Articles never end with a "Next in..." or "Next up..." paragraph, or an equivalent "the next article is..." closer. Series navigation (previous/next) handles moving to the next article.
 - New pages and posts match the current site's layouts, tone, and components.
 - Thoughts page: Series and Articles panels both sit on a white background. No dark photo band and no transparent or clear Articles band. Headings use the usual dark section style on white.
 - Website tests and deploys use `?gv_internal=1`.
